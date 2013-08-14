@@ -55,14 +55,6 @@ DEPRECATED_BY_CHOICES = (
 )
 
 
-# def CPEMixin(cpe_fieldname, cpe_version):
-#     class CPEMixinGetter(object):
-#         def as_cpe(self):
-#             return CPE(getattr(self, cpe_fieldname), cpe_version)
-# 
-#     return CPEMixinGetter
-
-
 # ################################
 #    MODEL CLASSES OF CPE DICT   #
 # ################################
