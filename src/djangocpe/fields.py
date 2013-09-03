@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-# from cpe import CPE
+from rfc3987 import parse
+
+from cpe.cpe import CPE
+
 from django.core.exceptions import ValidationError
 from django.db import models
-
-import rfc3987 as rfc
-
-from cpe import CPE
 
 
 class URIField(models.URLField):
@@ -21,10 +20,15 @@ class URIField(models.URLField):
         """
         Check if value is a valid URI according to RFC 3986
         'Uniform Resource Identifier (URI): Generic Syntax'
+
+        :param string value: URI value to check
+        :returns: valid URI?
+        :rtyoe: boolean
+        :exception: ValidationError - Invalid URI value
         """
 
         try:
-            rfc.parse(value, rule='URI')
+            parse(value, rule='URI_reference')
         except ValueError:
             # Incorrect URI
             raise ValidationError(
@@ -53,12 +57,17 @@ class LanguageField(models.CharField):
         """
         Check if value is a valid language value according to
         standard RFC 5646 'Tags for Identifying Languages'
+
+        :param string value: language value to check
+        :returns: valid language?
+        :rtyoe: boolean
+        :exception: ValidationError - Invalid language value
         """
 
         # TODO: improve validation and not use CPE package
         cpename = 'cpe:/a:mozilla:firefox:22::osx:{0}'.format(value)
         try:
-            CPE(cpename)
+            CPE(cpename, CPE.VERSION_2_2)
         except (ValueError, NotImplementedError):
             # Incorrect language
             raise ValidationError(
