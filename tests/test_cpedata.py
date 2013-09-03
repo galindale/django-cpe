@@ -94,6 +94,17 @@ class TestCpeData:
         assert other == cpe_db.other
         assert language == cpe_db.language
 
+    def test_good_cpe_empty(self):
+        """
+        Check the creation of a correct cpe data element.
+        """
+
+        # Save elem in database
+        cpe = CpeData()
+
+        cpe.full_clean()  # Object validation
+        cpe.save()
+
     def test_bad_cpe_part(self, good_cpedata):
         """
         Check the creation of a cpe data with an invalid value in
