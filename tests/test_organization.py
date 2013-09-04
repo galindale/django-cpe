@@ -92,6 +92,6 @@ class TestOrganization:
         system uri value.
         """
 
-        org = mommy.prepare(Organization, system_uri=("u"*256))
+        org = mommy.prepare(Organization, system_uri=("u" * 256))
         with pytest.raises(ValidationError):
             org.full_clean(['description'])

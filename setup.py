@@ -45,5 +45,5 @@ setup(name='django-cpe',
       entry_points={
           'console_scripts':
               ['django-cpe=djangocpe:main']
-          }
+      }
       )
