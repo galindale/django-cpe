@@ -65,13 +65,16 @@ class TestCpeData:
         other = 'NA'
         language = '"es\-es"'
 
-        # Save elem in database
+        # Create object
         cpe = CpeData(part=part, vendor=vendor, product=product,
                       version=version, update=update, edition=edition,
                       sw_edition=sw_edition, target_sw=target_sw,
                       target_hw=target_hw, other=other, language=language)
 
-        cpe.full_clean()  # Object validation
+        # Object validation
+        cpe.full_clean()
+
+        # Save object in database
         cpe.save()
 
         # Load elem from database

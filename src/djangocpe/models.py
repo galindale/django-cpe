@@ -101,7 +101,7 @@ class CpeData(models.Model):
 
         for att in CPEComponent.CPE_COMP_KEYS_EXTENDED:
             value = getattr(self, att)
-            if value != "":
+            if (value != "") and (value is not None):
                 cpe_name.append('{0}={1}'.format(att, value))
                 cpe_name.append(', ')
 
@@ -139,7 +139,8 @@ class CpeData(models.Model):
                 cpe_name.append(', ')
 
         # Delete the last separator
-        cpe_name = cpe_name[:-1]
+        if len(cpe_name) > 1:
+            cpe_name = cpe_name[:-1]
 
         # Append the WFN suffix
         cpe_name.append(']')
