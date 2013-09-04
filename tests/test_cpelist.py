@@ -30,7 +30,7 @@ feedback about it, please contact:
 
 import pytest
 
-from djangocpe.models import CpeList, CpeItem
+from djangocpe.models import CpeList
 from model_mommy import mommy
 from .fixtures import good_cpedata
 
@@ -48,7 +48,7 @@ class TestCpeList:
         """
 
         # Save elem in database
-        clist = CpeList(name="Name of cpe list")
+        clist = mommy.prepare('djangocpe.CpeList')
         clist.save()
 
         # Load elem from database

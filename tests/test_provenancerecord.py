@@ -30,7 +30,7 @@ feedback about it, please contact:
 
 import pytest
 
-from djangocpe.models import ProvenanceRecord, CpeItem
+from djangocpe.models import ProvenanceRecord
 from model_mommy import mommy
 
 from .fixtures import good_org

@@ -32,6 +32,7 @@ def good_cpedata():
                    sw_edition=sw_edition, target_sw=target_sw,
                    target_hw=target_hw, other=other, language=language)
 
+
 @pytest.fixture
 def good_org():
     """

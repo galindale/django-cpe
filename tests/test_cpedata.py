@@ -34,7 +34,6 @@ import copy
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from model_mommy import mommy
 
 from djangocpe.models import CpeData
 from .fixtures import good_cpedata

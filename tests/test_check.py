@@ -81,8 +81,6 @@ class TestCheck:
         with pytest.raises(ValidationError) as e:
             check.full_clean(['description'])
 
-        e_str = str(e.value)
-
         assert 'file_ref' in e.value.message_dict
         assert 'system_uri' not in e.value.message_dict
 
@@ -101,8 +99,6 @@ class TestCheck:
 
         with pytest.raises(ValidationError) as e:
             check.full_clean(['description'])
-
-        e_str = str(e.value)
 
         assert 'file_ref' not in e.value.message_dict
         assert 'system_uri' in e.value.message_dict

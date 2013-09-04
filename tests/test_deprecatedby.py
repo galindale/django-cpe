@@ -30,11 +30,10 @@ feedback about it, please contact:
 
 import pytest
 
-from django.utils import timezone
 from django.core.exceptions import ValidationError
 from model_mommy import mommy
 
-from djangocpe.models import DeprecatedBy, CpeData, Deprecation
+from djangocpe.models import DeprecatedBy, Deprecation
 from djangocpe.models import DEPRECATED_BY_NAME_CORRECTION
 from .fixtures import good_cpedata
 
@@ -57,7 +56,7 @@ class TestDeprecatedBy:
 
         dep = mommy.make(Deprecation)
 
-        dep_type = DEPRECATED_BY_NAME_CORRECTION 
+        dep_type = DEPRECATED_BY_NAME_CORRECTION
         depby = DeprecatedBy(dep_type=dep_type,
                              cpename=good_cpedata,
                              deprecation=dep)

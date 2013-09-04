@@ -31,7 +31,6 @@ feedback about it, please contact:
 import pytest
 
 from django.utils import timezone
-from django.core.exceptions import ValidationError
 from model_mommy import mommy
 
 from djangocpe.models import Deprecation, CpeItem

@@ -173,7 +173,7 @@ class CpeList(models.Model):
 
     #: CPE list name
     name = models.CharField(max_length=255, null=True, blank=True,
-        help_text=u'CPE list name')
+                            help_text=u'CPE list name')
 
     def __unicode__(self):
         """
@@ -197,14 +197,17 @@ class CpeItem(models.Model):
     cpename = models.OneToOneField(CpeData, null=False, related_name="cpeitem")
 
     #: Whether or not the name has been deprecated
-    deprecated = models.NullBooleanField(null=True, blank=True, default=False,
+    deprecated = models.NullBooleanField(
+        null=True, blank=True, default=False,
         help_text=u'Whether or not the name has been deprecated')
 
     #: The name that deprecated this name, bound in CPE 2.2 format
-    deprecated_by = models.OneToOneField(CpeData, null=True, blank=True, related_name="deprecation_data")
+    deprecated_by = models.OneToOneField(CpeData, null=True, blank=True,
+                                         related_name="deprecation_data")
 
     #: When the name was deprecated
-    deprecation_date = models.DateTimeField(null=True, blank=True,
+    deprecation_date = models.DateTimeField(
+        null=True, blank=True,
         help_text=u'When the name was deprecated')
 
     #: CPE list that includes the cpe item
@@ -237,21 +240,25 @@ class Generator(models.Model):
     """
 
     #: The name of the application used to generate the file
-    product_name = models.CharField(max_length=255, null=True, blank=True,
+    product_name = models.CharField(
+        max_length=255, null=True, blank=True,
         help_text=u'The name of the application used to generate the file')
 
     #: The version of the application used to generate the file
-    product_version = models.CharField(max_length=255, null=True, blank=True,
+    product_version = models.CharField(
+        max_length=255, null=True, blank=True,
         help_text=u'The version of the application used to generate the file')
 
     #: The version of the schema that the document has been written against
     #: and that should be used for validation
-    schema_version = models.DecimalField(max_digits=4, decimal_places=2, null=False,
-        help_text=u'The version of the schema that the document has been written \
-                against and that should be used for validation')
+    schema_version = models.DecimalField(
+        max_digits=4, decimal_places=2, null=False,
+        help_text=u'The version of the schema that the document has been\
+                written against and that should be used for validation')
 
     #: When the particular document was compiled
-    timestamp = models.DateTimeField(null=False,
+    timestamp = models.DateTimeField(
+        null=False,
         help_text=u'When the particular document was compiled')
 
     #: Cpe list associated with the generator data
@@ -266,7 +273,8 @@ class Generator(models.Model):
         """
 
         return u'producto ({0}) version ({1}) esquema ({2}) fecha ({3})'.format(
-            self.product_name, self.product_version, self.schema_version, self.timestamp)
+            self.product_name, self.product_version,
+            self.schema_version, self.timestamp)
 
 
 class Title(models.Model):
@@ -276,11 +284,13 @@ class Title(models.Model):
     """
 
     #: Human-readable title of the CPE Name
-    title = models.CharField(max_length=255, null=False,
+    title = models.CharField(
+        max_length=255, null=False,
         help_text=u'Human-readable title of the CPE Name')
 
     #: Language associated with the title
-    language = LanguageField(null=False,
+    language = LanguageField(
+        null=False,
         help_text=u'Language associated with the title')
 
     #: Cpe item associated with the title
@@ -304,11 +314,13 @@ class Note(models.Model):
     """
 
     #: Note associated with the CPE Name
-    note = models.TextField(null=False,
+    note = models.TextField(
+        null=False,
         help_text=u'Note associated with the CPE Name')
 
     #: Language associated with the note
-    language = LanguageField(null=False,
+    language = LanguageField(
+        null=False,
         help_text=u'Language associated with the note')
 
     #: Cpe item associated with the note
@@ -333,11 +345,13 @@ class Reference(models.Model):
     """
 
     #: Human-readable title of the reference
-    name = models.CharField(max_length=255, null=False,
+    name = models.CharField(
+        max_length=255, null=False,
         help_text=u'Human-readable title of the reference')
 
     #: URL pointing to a real resource of reference
-    url = URIField(null=False,
+    url = URIField(
+        null=False,
         help_text=u'URL pointing to a real resource of reference')
 
     #: Cpe item associated with the reference
@@ -362,17 +376,20 @@ class Check(models.Model):
     """
 
     #: Check identifier
-    check_id = models.CharField(max_length=255, null=False,
+    check_id = models.CharField(
+        max_length=255, null=False,
         help_text=u'The check identifier')
 
     #: The pointer to the file where the check is defined
-    file_ref = URIField(null=True, blank=True,
+    file_ref = URIField(
+        null=True, blank=True,
         help_text=u'The pointer to the file where the check is defined')
 
     #: The checking system specification URI of the reference, that is,
     #: a URI for a particular version of OVAL or
     #: a related system testing language
-    system_uri = URIField(null=False,
+    system_uri = URIField(
+        null=False,
         help_text=u'Check system specification URI of the reference')
 
     #: Cpe item associated with the check
@@ -399,13 +416,17 @@ class Organization(models.Model):
     Stores information about organizations of CPE dictionary.
     """
 
-    system_uri = URIField(null=False,
+    system_uri = URIField(
+        null=False,
         help_text=u'Unique URI representing the organization')
-    name = models.CharField(max_length=255, null=False,
+    name = models.CharField(
+        max_length=255, null=False,
         help_text=u'Human readable name of the organization')
-    datetime_action = models.DateTimeField(null=False,
+    datetime_action = models.DateTimeField(
+        null=False,
         help_text=u'The date the organization performed an action relative to an identifier name')
-    description = models.CharField(max_length=255, null=True, blank=True,
+    description = models.CharField(
+        max_length=255, null=True, blank=True,
         help_text=u'A high-level description of the organization')
 
     def __unicode__(self):
@@ -425,7 +446,8 @@ class Deprecation(models.Model):
     """
 
     #: When the deprecation occurred
-    date = models.DateTimeField(null=True, blank=True,
+    date = models.DateTimeField(
+        null=True, blank=True,
         help_text=u'When the deprecation occurred')
 
     #: Cpe item associated with the check
@@ -449,11 +471,13 @@ class DeprecatedBy(models.Model):
     """
 
     #: The type of deprecation
-    dep_type = models.IntegerField(null=False, choices=DEPRECATED_BY_CHOICES,
+    dep_type = models.IntegerField(
+        null=False, choices=DEPRECATED_BY_CHOICES,
         help_text=u'The type of deprecation')
 
     #: The name that is deprecating the identifier name
-    cpename = models.OneToOneField(CpeData, null=False,
+    cpename = models.OneToOneField(
+        CpeData, null=False,
         related_name="deprecatedby")
 
     #: Information about deprecation
@@ -476,9 +500,11 @@ class ProvenanceRecord(models.Model):
     Stores information about a provenance record.
     """
 
-    submitter = models.ForeignKey(Organization, null=False, related_name='submitter',
+    submitter = models.ForeignKey(
+        Organization, null=False, related_name='submitter',
         help_text=u'The organization responsible for submitting the identifier name')
-    authority = models.ManyToManyField(Organization, null=False, related_name='authority',
+    authority = models.ManyToManyField(
+        Organization, null=False, related_name='authority',
         help_text=u'The authority or authorities responsible for endorsing the identifier name')
     cpeitem = models.ForeignKey(CpeItem, null=False)
 
@@ -498,14 +524,18 @@ class ChangeDescription(models.Model):
     Stores information about change information of a provenance record.
     """
 
-    change_type = models.IntegerField(null=False, choices=CHANGE_TYPE_CHOICES,
+    change_type = models.IntegerField(
+        null=False, choices=CHANGE_TYPE_CHOICES,
         default=CHANGE_ORIGINAL_RECORD,
         help_text=u'The type of change that occurred')
-    datetime = models.DateTimeField(null=True, blank=True,
+    datetime = models.DateTimeField(
+        null=True, blank=True,
         help_text=u'When the change occurred')
-    evidence_ref = models.IntegerField(null=True, blank=True, choices=EVIDENCE_REF_CHOICES,
+    evidence_ref = models.IntegerField(
+        null=True, blank=True, choices=EVIDENCE_REF_CHOICES,
         help_text=u'Supporting evidence for any change to a name or associated metadata')
-    comment = models.TextField(max_length=255, null=True, blank=True,
+    comment = models.TextField(
+        max_length=255, null=True, blank=True,
         help_text=u'Comments explaining the rationale for the change')
     prov_record = models.ForeignKey(ProvenanceRecord, null=False)
 
@@ -523,4 +553,3 @@ class ChangeDescription(models.Model):
             return u'{0} - {1}'.format(change_type, evidence_ref)
         else:
             return u'{0}'.format(change_type)
-

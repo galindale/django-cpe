@@ -34,7 +34,7 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 from model_mommy import mommy
 
-from djangocpe.models import ChangeDescription, ProvenanceRecord, Organization
+from djangocpe.models import ChangeDescription, ProvenanceRecord
 from djangocpe.models import EVIDENCE_CURATOR_UPDATE, CHANGE_ORIGINAL_RECORD
 from .fixtures import good_org
 
