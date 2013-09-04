@@ -21,3 +21,8 @@ before_script:
 script:
  # Execute tests
  - py.test -q
+# branch builds whitelist
+branches:
+  only:
+    - master
+    - develop
