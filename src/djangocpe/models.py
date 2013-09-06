@@ -35,7 +35,7 @@ EVIDENCE_VENDOR_FIX = 2
 # A third party released or submitted information that led to a change
 EVIDENCE_THIRD_PARTY_FIX = 3
 
-EVIDENCE_REF_CHOICES = (
+EVIDENCE_TYPE_CHOICES = (
     (EVIDENCE_CURATOR_UPDATE, 'Curator update'),
     (EVIDENCE_VENDOR_FIX, 'Vendor fix'),
     (EVIDENCE_THIRD_PARTY_FIX, 'Third party fix')
@@ -64,19 +64,31 @@ DEPRECATED_BY_CHOICES = (
 
 class CpeData(models.Model):
     """
-    Stores data related to the CPE Names of dictionary.
+    Stores data related to the CPE Names of the dictionary.
     """
 
+    #: The system type of CPE Name
     part = models.CharField(max_length=255, null=True, blank=True)
+    #: The vendor name of CPE Name
     vendor = models.CharField(max_length=255, null=True, blank=True)
+    #: The product name of CPE Name
     product = models.CharField(max_length=255, null=True, blank=True)
+    #: The version of product of CPE Name
     version = models.CharField(max_length=255, null=True, blank=True)
+    #: The update or service pack information of CPE Name
     update = models.CharField(max_length=255, null=True, blank=True)
+    #: The edition of product of CPE Name
     edition = models.CharField(max_length=255, null=True, blank=True)
+    #: The software edition of CPE Name
     sw_edition = models.CharField(max_length=255, null=True, blank=True)
+    #: The software computing environment of CPE Name within
+    #: which the product operates
     target_sw = models.CharField(max_length=255, null=True, blank=True)
+    #: The arquitecture of CPE Name
     target_hw = models.CharField(max_length=255, null=True, blank=True)
+    #: The extra information about CPE Name
     other = models.CharField(max_length=255, null=True, blank=True)
+    #: The internationalization information of CPE Name
     language = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
@@ -105,8 +117,8 @@ class CpeData(models.Model):
                 cpe_name.append('{0}={1}'.format(att, value))
                 cpe_name.append(', ')
 
-        # Delete the last separator
         if len(cpe_name) > 1:
+            # Delete the last separator
             cpe_name = cpe_name[:-1]
 
         # Append the WFN suffix
@@ -124,12 +136,12 @@ class CpeData(models.Model):
     def __unicode__(self):
         """
         Human-readable representation of model objects.
+        Returns each object as CPE name string with WFN style.
 
         :returns: CPE data as string
         :rtype: string
         """
 
-        # Compose a CPE Name with WFN style
         cpe_name = ['wfn:[']
 
         for att in CPEComponent.CPE_COMP_KEYS_EXTENDED:
@@ -138,12 +150,13 @@ class CpeData(models.Model):
                 cpe_name.append('{0}={1}'.format(att, value))
                 cpe_name.append(', ')
 
-        # Delete the last separator
         if len(cpe_name) > 1:
+            # Delete the last separator
             cpe_name = cpe_name[:-1]
 
         # Append the WFN suffix
         cpe_name.append(']')
+
         return "".join(cpe_name)
 
     #def save(self, *args, **kwargs):
@@ -194,16 +207,19 @@ class CpeItem(models.Model):
     """
 
     #: The identifier name bound in CPE 2.2 format
-    cpename = models.OneToOneField(CpeData, null=False, related_name="cpeitem")
+    name = models.ForeignKey(
+        CpeData, null=False,
+        related_name="name_cpeitem")
 
     #: Whether or not the name has been deprecated
     deprecated = models.NullBooleanField(
-        null=True, blank=True, default=False,
+        blank=True, default=False,
         help_text=u'Whether or not the name has been deprecated')
 
     #: The name that deprecated this name, bound in CPE 2.2 format
-    deprecated_by = models.OneToOneField(CpeData, null=True, blank=True,
-                                         related_name="deprecation_data")
+    deprecated_by = models.ForeignKey(
+        CpeData, null=True, blank=True,
+        related_name="deprecatedby_cpeitem")
 
     #: When the name was deprecated
     deprecation_date = models.DateTimeField(
@@ -212,6 +228,9 @@ class CpeItem(models.Model):
 
     #: CPE list that includes the cpe item
     cpelist = models.ForeignKey(CpeList, null=False)
+
+    class Meta:
+        unique_together = (("name", "cpelist"),)
 
     def __unicode__(self):
         """
@@ -254,7 +273,7 @@ class Generator(models.Model):
     schema_version = models.DecimalField(
         max_digits=4, decimal_places=2, null=False,
         help_text=u'The version of the schema that the document has been\
-                written against and that should be used for validation')
+            written against and that should be used for validation')
 
     #: When the particular document was compiled
     timestamp = models.DateTimeField(
@@ -350,7 +369,7 @@ class Reference(models.Model):
         help_text=u'Human-readable title of the reference')
 
     #: URL pointing to a real resource of reference
-    url = URIField(
+    href = URIField(
         null=False,
         help_text=u'URL pointing to a real resource of reference')
 
@@ -365,7 +384,7 @@ class Reference(models.Model):
         :rtype: string
         """
 
-        return u'{0} ({1})'.format(self.name, self.url)
+        return u'{0} ({1})'.format(self.name, self.href)
 
 
 class Check(models.Model):
@@ -381,19 +400,22 @@ class Check(models.Model):
         help_text=u'The check identifier')
 
     #: The pointer to the file where the check is defined
-    file_ref = URIField(
+    href = URIField(
         null=True, blank=True,
         help_text=u'The pointer to the file where the check is defined')
 
     #: The checking system specification URI of the reference, that is,
     #: a URI for a particular version of OVAL or
     #: a related system testing language
-    system_uri = URIField(
+    system = URIField(
         null=False,
         help_text=u'Check system specification URI of the reference')
 
     #: Cpe item associated with the check
     cpeitem = models.ForeignKey(CpeItem, null=False)
+
+    class Meta:
+        unique_together = (("system", "cpeitem"),)
 
     def __unicode__(self):
         """
@@ -403,7 +425,7 @@ class Check(models.Model):
         :rtype: string
         """
 
-        return u'{0} ({1})'.format(self.check_id, self.system_uri)
+        return u'{0} ({1})'.format(self.check_id, self.system)
 
 
 # ################################################
@@ -416,16 +438,16 @@ class Organization(models.Model):
     Stores information about organizations of CPE dictionary.
     """
 
-    system_uri = URIField(
+    system_id = URIField(
         null=False,
         help_text=u'Unique URI representing the organization')
     name = models.CharField(
         max_length=255, null=False,
         help_text=u'Human readable name of the organization')
-    datetime_action = models.DateTimeField(
+    action_datetime = models.DateTimeField(
         null=False,
         help_text=u'The date the organization performed an action relative to an identifier name')
-    description = models.CharField(
+    description = models.TextField(
         max_length=255, null=True, blank=True,
         help_text=u'A high-level description of the organization')
 
@@ -437,7 +459,7 @@ class Organization(models.Model):
         :rtype: string
         """
 
-        return u'{0} ({1})'.format(self.name, self.system_uri)
+        return u'{0} ({1})'.format(self.name, self.system_id)
 
 
 class Deprecation(models.Model):
@@ -446,7 +468,7 @@ class Deprecation(models.Model):
     """
 
     #: When the deprecation occurred
-    date = models.DateTimeField(
+    dep_datetime = models.DateTimeField(
         null=True, blank=True,
         help_text=u'When the deprecation occurred')
 
@@ -461,7 +483,7 @@ class Deprecation(models.Model):
         :rtype: string
         """
 
-        return u'{0}'.format(self.date)
+        return u'{0}'.format(self.dep_datetime)
 
 
 class DeprecatedBy(models.Model):
@@ -476,9 +498,9 @@ class DeprecatedBy(models.Model):
         help_text=u'The type of deprecation')
 
     #: The name that is deprecating the identifier name
-    cpename = models.OneToOneField(
+    name = models.ForeignKey(
         CpeData, null=False,
-        related_name="deprecatedby")
+        related_name="name_deprecatedby")
 
     #: Information about deprecation
     deprecation = models.ForeignKey(Deprecation, null=False)
@@ -491,8 +513,8 @@ class DeprecatedBy(models.Model):
         :rtype: string
         """
 
-        depre_type = DEPRECATED_BY_CHOICES[self.dep_type][1]
-        return u'{0} ({1})'.format(self.cpename, depre_type)
+        dep_type_text = DEPRECATED_BY_CHOICES[self.dep_type][1]
+        return u'{0} ({1})'.format(self.cpename, dep_type_text)
 
 
 class ProvenanceRecord(models.Model):
@@ -519,6 +541,30 @@ class ProvenanceRecord(models.Model):
         return u'{0} ({1})'.format(self.cpeitem.cpename, self.submitter)
 
 
+class EvidenceReference(models.Model):
+    """
+    Stores information about change evidences.
+    """
+
+    ref = URIField(
+        null=False,
+        help_text=u'Unique URI representing the evidence reference')
+    evidence = models.IntegerField(
+        null=False, choices=EVIDENCE_TYPE_CHOICES,
+        help_text=u'Supporting evidence for any change to a name or associated metadata')
+
+    def __unicode__(self):
+        """
+        Human-readable representation of model objects.
+
+        :returns: Evidence reference as string
+        :rtype: string
+        """
+
+        evidence_text = EVIDENCE_TYPE_CHOICES[self.evidence][1]
+        return u'{0} - {1}'.format(ref, evidence_text)
+
+
 class ChangeDescription(models.Model):
     """
     Stores information about change information of a provenance record.
@@ -528,16 +574,14 @@ class ChangeDescription(models.Model):
         null=False, choices=CHANGE_TYPE_CHOICES,
         default=CHANGE_ORIGINAL_RECORD,
         help_text=u'The type of change that occurred')
-    datetime = models.DateTimeField(
-        null=True, blank=True,
+    change_datetime = models.DateTimeField(
+        null=False,
         help_text=u'When the change occurred')
-    evidence_ref = models.IntegerField(
-        null=True, blank=True, choices=EVIDENCE_REF_CHOICES,
-        help_text=u'Supporting evidence for any change to a name or associated metadata')
     comment = models.TextField(
         max_length=255, null=True, blank=True,
         help_text=u'Comments explaining the rationale for the change')
     prov_record = models.ForeignKey(ProvenanceRecord, null=False)
+    evidence = models.ForeignKey(EvidenceReference, null=True)
 
     def __unicode__(self):
         """
@@ -547,9 +591,5 @@ class ChangeDescription(models.Model):
         :rtype: string
         """
 
-        change_type = CHANGE_TYPE_CHOICES[self.change_type][1]
-        if self.evidence_ref is not None:
-            evidence_ref = EVIDENCE_REF_CHOICES[self.evidence_ref][1]
-            return u'{0} - {1}'.format(change_type, evidence_ref)
-        else:
-            return u'{0}'.format(change_type)
+        change_type_text = CHANGE_TYPE_CHOICES[self.change_type][1]
+        return u'{0} - {1}'.format(datetime, change_type_text)
