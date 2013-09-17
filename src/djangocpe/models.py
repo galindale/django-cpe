@@ -246,7 +246,7 @@ class CpeItem(models.Model):
         else:
             depre_str = "no anulado"
 
-        return u'{0} ({1})'.format(self.cpename.__unicode__(), depre_str)
+        return u'{0} ({1})'.format(self.name.__unicode__(), depre_str)
 
 
 class Generator(models.Model):
@@ -562,7 +562,7 @@ class EvidenceReference(models.Model):
         """
 
         evidence_text = EVIDENCE_TYPE_CHOICES[self.evidence][1]
-        return u'{0} - {1}'.format(ref, evidence_text)
+        return u'{0} - {1}'.format(self.ref, evidence_text)
 
 
 class ChangeDescription(models.Model):
@@ -592,4 +592,4 @@ class ChangeDescription(models.Model):
         """
 
         change_type_text = CHANGE_TYPE_CHOICES[self.change_type][1]
-        return u'{0} - {1}'.format(datetime, change_type_text)
+        return u'{0} - {1}'.format(self.datetime, change_type_text)
