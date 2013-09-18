@@ -60,13 +60,11 @@ class TestCpe23iTitle:
         # Read title element stored in database
         title_list = Title.objects.filter(title=title.title,
                                           language=title.language)
-        #title_db = title_list[0]
-        print title_list
-        print title
+        title_db = title_list[0]
 
         # Check if test title element is stored in database
-        #assert title_db.title == title.title
-        #assert title_db.language == title.language
+        assert title_db.title == title.title
+        assert title_db.language == title.language
 
     def test_good_title_one(self):
         """
@@ -93,15 +91,16 @@ class TestCpe23iTitle:
         # XML CPE Dictionary path
         XML_PATH = './xml/cpedict_v2.3_title_two.xml'
 
-        # Values of titles
+        # Check first title element
         title1 = "Elemata CMS 3.0 release candidate"
         language1 = "en-US"
         title1_db = Title(title=title1, language=language1)
 
-        title2 = u"Elemata CMS 3.0 versióandidata"
+        self._check_title(XML_PATH, title1_db)
+
+        # Check second title element
+        title2 = u"Elemata CMS 3.0 version candidata"
         language2 = "es-es"
         title2_db = Title(title=title2, language=language2)
 
-        # Check first title element
-        self._check_title(XML_PATH, title1_db)
         self._check_title(XML_PATH, title2_db)
