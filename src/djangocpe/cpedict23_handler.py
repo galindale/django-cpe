@@ -34,7 +34,7 @@ from xml.sax.handler import ContentHandler
 from datetime import datetime
 
 from cpe import CPE
-from djangocpe.models import CpeList, Generator, CpeData, CpeItem
+from djangocpe.models import CpeList, Generator, CpeData, CpeItem, Title
 from django.db.utils import IntegrityError
 
 
@@ -52,10 +52,10 @@ class Cpedict23Handler(ContentHandler):
 
     TAG_GEN = "generator"
 
-    TAG_GEN_PROD_NAME = "product_name"
-    TAG_GEN_PROD_VER = "product_version"
-    TAG_GEN_SCHEMA_VER = "schema_version"
-    TAG_GEN_TIMESTAMP = "timestamp"
+    TAG_PROD_NAME = "product_name"
+    TAG_PROD_VER = "product_version"
+    TAG_SCHEMA_VER = "schema_version"
+    TAG_TIMESTAMP = "timestamp"
 
     # ------- CPE-ITEM -------
 
@@ -69,6 +69,11 @@ class Cpedict23Handler(ContentHandler):
     ATT_CPEITEM_23_DEPRECATED = "deprecated"
     ATT_CPEITEM_23_DEPDATE = "deprecation_date"
 
+    # -------- TITLE ---------
+
+    TAG_TITLE = "title"
+    ATT_TITLE_LANG = "xml:lang"
+
     def __init__(self, *args, **kwargs):
         """
         Initialization of condition variables and objects to store input
@@ -78,9 +83,7 @@ class Cpedict23Handler(ContentHandler):
         # ------ CPE-LIST ------
 
         self.inCpelist = False
-
         self.cpelist = dict()
-
         self.cpelist_db = None
 
         # ------ GENERATOR ------
@@ -97,12 +100,17 @@ class Cpedict23Handler(ContentHandler):
         # ------- CPE-ITEM ------
 
         self.inCpeitem = False
-
         self.cpeitem = dict()
+        self.cpeitem_db = None
 
         # ------ CPE23-ITEM -----
 
         self.cpeitem23 = dict()
+
+        # -------- TITLE --------
+
+        self.inTitle = False
+        self.title = dict()
 
     def _startCpeList(self, name, attributes):
         """
@@ -142,10 +150,10 @@ class Cpedict23Handler(ContentHandler):
             self.inGenerator = True
 
             # Initializes the dictionary of generator element
-            self.generator[self.TAG_GEN_PROD_NAME] = ""
-            self.generator[self.TAG_GEN_PROD_VER] = ""
-            self.generator[self.TAG_GEN_SCHEMA_VER] = ""
-            self.generator[self.TAG_GEN_TIMESTAMP] = ""
+            self.generator[self.TAG_PROD_NAME] = ""
+            self.generator[self.TAG_PROD_VER] = ""
+            self.generator[self.TAG_SCHEMA_VER] = ""
+            self.generator[self.TAG_TIMESTAMP] = ""
 
     def _startCpeItem(self, name, attributes):
         """
@@ -191,6 +199,25 @@ class Cpedict23Handler(ContentHandler):
             depdate = attributes.get(self.ATT_CPEITEM_23_DEPDATE)
             self.cpeitem23[self.ATT_CPEITEM_23_DEPDATE] = depdate
 
+    def _startTitle(self, name, attributes):
+        """
+        Returns True if the input opening tag corresponds
+        to a title element.
+        In this case, the opening tag is analyzed.
+
+        :param string name: The opening tag name of an element
+        :param Atributes attributes: List of element attributes
+        :returns: Returns True if the input opening tag corresponds to a
+        title element
+        :rtype: boolean
+        """
+
+        if self.inCpeitem:
+            self.inTitle = True
+
+            language = attributes.get(self.ATT_TITLE_LANG)
+            self.title[self.ATT_TITLE_LANG] = language
+
     def startElement(self, name, attributes):
         """
         Analyzes the input opening tag of an element.
@@ -209,16 +236,16 @@ class Cpedict23Handler(ContentHandler):
 
         elif name == self.TAG_GEN:
             self._startGenerator(name, attributes)
-        elif name == self.TAG_GEN_PROD_NAME:
+        elif name == self.TAG_PROD_NAME:
             if self.inGenerator:
                 self.inGenProdName = True
-        elif name == self.TAG_GEN_PROD_VER:
+        elif name == self.TAG_PROD_VER:
             if self.inGenerator:
                 self.inGenProdVer = True
-        elif name == self.TAG_GEN_SCHEMA_VER:
+        elif name == self.TAG_SCHEMA_VER:
             if self.inGenerator:
                 self.inGenSchemaVer = True
-        elif name == self.TAG_GEN_TIMESTAMP:
+        elif name == self.TAG_TIMESTAMP:
             if self.inGenerator:
                 self.inGenTimestamp = True
 
@@ -232,18 +259,35 @@ class Cpedict23Handler(ContentHandler):
         elif name == self.TAG_CPEITEM_23:
             self._startCpeItem23(name, attributes)
 
+        # -------- TITLE -------
+        elif name == self.TAG_TITLE:
+            self._startTitle(name, attributes)
+
     def characters(self, chars):
+        """
+        Analyze the content of XML elements.
+
+        :param string chars: The content of element as string
+        :returns: None
+        """
+
         # ------ GENERATOR ------
 
         if self.inGenerator:
             if self.inGenProdName:
-                self.generator[self.TAG_GEN_PROD_NAME] = chars
+                self.generator[self.TAG_PROD_NAME] = chars
             if self.inGenProdVer:
-                self.generator[self.TAG_GEN_PROD_VER] = chars
+                self.generator[self.TAG_PROD_VER] = chars
             if self.inGenSchemaVer:
-                self.generator[self.TAG_GEN_SCHEMA_VER] = chars
+                self.generator[self.TAG_SCHEMA_VER] = chars
             if self.inGenTimestamp:
-                self.generator[self.TAG_GEN_TIMESTAMP] = chars
+                self.generator[self.TAG_TIMESTAMP] = chars
+
+        # -------- TITLE -------
+
+        elif self.inCpeitem:
+            if self.inTitle:
+                self.title[self.TAG_TITLE] = chars
 
     def _endGenerator(self, name):
         """
@@ -262,10 +306,10 @@ class Cpedict23Handler(ContentHandler):
 
             # Save the generator element
 
-            pn = self.generator[self.TAG_GEN_PROD_NAME]
-            pv = self.generator[self.TAG_GEN_PROD_VER]
-            sv = self.generator[self.TAG_GEN_SCHEMA_VER]
-            ts = self.generator[self.TAG_GEN_TIMESTAMP]
+            pn = self.generator[self.TAG_PROD_NAME]
+            pv = self.generator[self.TAG_PROD_VER]
+            sv = self.generator[self.TAG_SCHEMA_VER]
+            ts = self.generator[self.TAG_TIMESTAMP]
 
             gen = Generator(product_name=pn,
                             product_version=pv,
@@ -359,11 +403,36 @@ class Cpedict23Handler(ContentHandler):
                     depre = self.cpeitem23[self.ATT_CPEITEM_23_DEPRECATED]
                     depdate = self.cpeitem23[self.ATT_CPEITEM_23_DEPDATE]
 
-                    cpeitem = CpeItem(deprecated=depre,
-                                      deprecation_date=depdate,
-                                      name=cpedata,
-                                      cpelist=self.cpelist_db)
-                    cpeitem.save()
+                    self.cpeitem_db = CpeItem(deprecated=depre,
+                                              deprecation_date=depdate,
+                                              name=cpedata,
+                                              cpelist=self.cpelist_db)
+                    self.cpeitem_db.save()
+
+                    if len(self.title) > 0:
+                        # Title element must be saved after cpeitem element
+                        # because of the dependency between each other
+                        title = self.title[self.TAG_TITLE]
+                        language = self.title[self.ATT_TITLE_LANG]
+
+                        self.title_db = Title(title=title,
+                                              language=language,
+                                              cpeitem=self.cpeitem_db)
+                        self.title_db.save()
+
+    def _endTitle(self, name):
+        """
+        Returns True if the input ending tag corresponds to a title element.
+        In this case, the ending tag is analyzed.
+
+        :param string name: The ending tag name of an element
+        :returns: Returns True if the input ending tag corresponds to a
+        title element
+        :rtype: boolean
+        """
+
+        if self.inCpelist:
+            self.inTitle = False
 
     def endElement(self, name):
         """
@@ -382,16 +451,16 @@ class Cpedict23Handler(ContentHandler):
 
         elif name == self.TAG_GEN:
             self._endGenerator(name)
-        elif name == self.TAG_GEN_PROD_NAME:
+        elif name == self.TAG_PROD_NAME:
             if self.inGenerator:
                 self.inGenProdName = False
-        elif name == self.TAG_GEN_PROD_VER:
+        elif name == self.TAG_PROD_VER:
             if self.inGenerator:
                 self.inGenProdVer = False
-        elif name == self.TAG_GEN_SCHEMA_VER:
+        elif name == self.TAG_SCHEMA_VER:
             if self.inGenerator:
                 self.inGenSchemaVer = False
-        elif name == self.TAG_GEN_TIMESTAMP:
+        elif name == self.TAG_TIMESTAMP:
             if self.inGenerator:
                 self.inGenTimestamp = False
 
@@ -399,3 +468,8 @@ class Cpedict23Handler(ContentHandler):
 
         elif name == self.TAG_CPEITEM:
             self._endCpeItem(name)
+
+        # ------- TITLE --------
+
+        elif name == self.TAG_TITLE:
+            self._endTitle(name)
