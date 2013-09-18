@@ -34,7 +34,7 @@ from xml.sax.handler import ContentHandler
 from datetime import datetime
 
 from cpe import CPE
-from djangocpe.models import CpeList, Generator, CpeData, CpeItem, Title
+from djangocpe.models import CpeList, Generator, CpeData, CpeItem, Title, Note
 from django.db.utils import IntegrityError
 
 
@@ -74,6 +74,12 @@ class Cpedict23Handler(ContentHandler):
     TAG_TITLE = "title"
     ATT_TITLE_LANG = "xml:lang"
 
+    # --------- NOTE ---------
+
+    TAG_NOTE_LIST = "notes"
+    TAG_NOTE = "note"
+    ATT_NOTE_LANG = "xml:lang"
+
     def __init__(self, *args, **kwargs):
         """
         Initialization of condition variables and objects to store input
@@ -111,6 +117,12 @@ class Cpedict23Handler(ContentHandler):
         self.inTitle = False
         self.titles = []
 
+        # -------- NOTE --------
+
+        self.inNote = False
+        self.inNotelist = False
+        self.notes = []
+
     def _startCpeList(self, name, attributes):
         """
         Analyzes the input opening tag corresponds to a cpe-list element.
@@ -137,12 +149,11 @@ class Cpedict23Handler(ContentHandler):
         :returns: None
         """
 
-        if self.inCpelist:
-            self.inGenerator = True
+        self.inGenerator = True
 
-            # Initializes the optional attributes of generator element
-            self.generator.product_name = ""
-            self.generator.product_version = ""
+        # Initializes the optional attributes of generator element
+        self.generator.product_name = ""
+        self.generator.product_version = ""
 
     def _startCpeItem(self, name, attributes):
         """
@@ -153,13 +164,12 @@ class Cpedict23Handler(ContentHandler):
         :returns: None
         """
 
-        if self.inCpelist:
-            self.inCpeitem = True
+        self.inCpeitem = True
 
-            # This name corresponds to version 2.2 of CPE.
-            # It is necessary to check valid name but not save in database
-            name = attributes.get(self.ATT_CPEITEM_NAME)
-            self.cpeitem[self.ATT_CPEITEM_NAME] = name
+        # This name corresponds to version 2.2 of CPE.
+        # It is necessary to check valid name but not save in database
+        name = attributes.get(self.ATT_CPEITEM_NAME)
+        self.cpeitem[self.ATT_CPEITEM_NAME] = name
 
     def _startCpeItem23(self, name, attributes):
         """
@@ -170,17 +180,16 @@ class Cpedict23Handler(ContentHandler):
         :returns: None
         """
 
-        if self.inCpeitem:
-            name = attributes.get(self.ATT_CPEITEM_23_NAME)
-            self.cpeitem23[self.ATT_CPEITEM_23_NAME] = name
+        name = attributes.get(self.ATT_CPEITEM_23_NAME)
+        self.cpeitem23[self.ATT_CPEITEM_23_NAME] = name
 
-            deprecated = attributes.get(self.ATT_CPEITEM_23_DEPRECATED)
-            if deprecated is None:
-                deprecated = False
-            self.cpeitem23[self.ATT_CPEITEM_23_DEPRECATED] = deprecated
+        deprecated = attributes.get(self.ATT_CPEITEM_23_DEPRECATED)
+        if deprecated is None:
+            deprecated = False
+        self.cpeitem23[self.ATT_CPEITEM_23_DEPRECATED] = deprecated
 
-            depdate = attributes.get(self.ATT_CPEITEM_23_DEPDATE)
-            self.cpeitem23[self.ATT_CPEITEM_23_DEPDATE] = depdate
+        depdate = attributes.get(self.ATT_CPEITEM_23_DEPDATE)
+        self.cpeitem23[self.ATT_CPEITEM_23_DEPDATE] = depdate
 
     def _startTitle(self, name, attributes):
         """
@@ -191,14 +200,30 @@ class Cpedict23Handler(ContentHandler):
         :returns: None
         """
 
-        if self.inCpeitem:
-            self.inTitle = True
+        language = attributes.get(self.ATT_TITLE_LANG)
+        title_values = Title()
+        title_values.language = language
 
-            language = attributes.get(self.ATT_TITLE_LANG)
-            title_values = Title()
-            title_values.language = language
+        self.titles.append(title_values)
 
-            self.titles.append(title_values)
+        self.inTitle = True
+
+    def _startNoteList(self, name, attributes):
+        """
+        Analyzes the input opening tag corresponds to a note element.
+
+        :param string name: The opening tag name of element
+        :param Atributes attributes: List of element attributes
+        :returns: None
+        """
+
+        self.inNotelist = True
+
+        language = attributes.get(self.ATT_NOTE_LANG)
+        note_values = Note()
+        note_values.language = language
+
+        self.notes.append(note_values)
 
     def startElement(self, name, attributes):
         """
@@ -208,42 +233,57 @@ class Cpedict23Handler(ContentHandler):
         :param Attributes attributes: List of element attributes
         :returns: None
         """
-
         # ------ CPE-LIST ------
 
         if name == self.TAG_CPELIST:
             self._startCpeList(name, attributes)
 
-        # ------ GENERATOR ------
+        elif self.inCpelist:
 
-        elif name == self.TAG_GEN:
-            self._startGenerator(name, attributes)
-        elif name == self.TAG_PROD_NAME:
-            if self.inGenerator:
-                self.inGenProdName = True
-        elif name == self.TAG_PROD_VER:
-            if self.inGenerator:
-                self.inGenProdVer = True
-        elif name == self.TAG_SCHEMA_VER:
-            if self.inGenerator:
-                self.inGenSchemaVer = True
-        elif name == self.TAG_TIMESTAMP:
-            if self.inGenerator:
-                self.inGenTimestamp = True
+            # ------ GENERATOR ------
 
-        # ------ CPE-ITEM ------
+            if name == self.TAG_GEN:
+                self._startGenerator(name, attributes)
 
-        elif name == self.TAG_CPEITEM:
-            self._startCpeItem(name, attributes)
+            elif self.inGenerator:
+                if name == self.TAG_PROD_NAME:
+                    self.inGenProdName = True
 
-        # ----- CPE23-ITEM -----
+                elif name == self.TAG_PROD_VER:
+                    self.inGenProdVer = True
 
-        elif name == self.TAG_CPEITEM_23:
-            self._startCpeItem23(name, attributes)
+                elif name == self.TAG_SCHEMA_VER:
+                    self.inGenSchemaVer = True
 
-        # -------- TITLE -------
-        elif name == self.TAG_TITLE:
-            self._startTitle(name, attributes)
+                elif name == self.TAG_TIMESTAMP:
+                    self.inGenTimestamp = True
+
+            # ------ CPE-ITEM ------
+
+            elif name == self.TAG_CPEITEM:
+                self._startCpeItem(name, attributes)
+
+            elif self.inCpeitem:
+
+                # ----- CPE23-ITEM -----
+
+                if name == self.TAG_CPEITEM_23:
+                    self._startCpeItem23(name, attributes)
+
+                # -------- TITLE -------
+
+                elif name == self.TAG_TITLE:
+                    self._startTitle(name, attributes)
+
+                # --------- NOTE -------
+
+                elif name == self.TAG_NOTE_LIST:
+                    self._startNoteList(name, attributes)
+
+                elif self.inNotelist:
+
+                    if name == self.TAG_NOTE:
+                        self.inNote = True
 
     def characters(self, chars):
         """
@@ -252,9 +292,7 @@ class Cpedict23Handler(ContentHandler):
         :param string chars: The content of element as string
         :returns: None
         """
-
         # ------ GENERATOR ------
-
         if self.inGenerator:
             if self.inGenProdName:
                 self.generator.product_name = chars
@@ -267,10 +305,15 @@ class Cpedict23Handler(ContentHandler):
 
         # -------- TITLE -------
 
-        elif self.inCpeitem:
-            if self.inTitle:
-                # Set the title of last title element found
-                self.titles[-1].title = chars
+        elif self.inTitle:
+            # Set the title of last title element found
+            self.titles[-1].title = chars
+
+        # --------- NOTE -------
+
+        elif self.inNote:
+            # Set the note of last note element found
+            self.notes[-1].note = chars
 
     def _endGenerator(self, name):
         """
@@ -280,13 +323,12 @@ class Cpedict23Handler(ContentHandler):
         :returns: None
         """
 
-        if self.inCpelist:
-            self.inGenerator = False
+        self.inGenerator = False
 
-            # Save the generator element
+        # Save the generator element
 
-            self.generator.cpelist = self.cpelist
-            self.generator.save()
+        self.generator.cpelist = self.cpelist
+        self.generator.save()
 
     def _endCpeItem(self, name):
         """
@@ -296,103 +338,98 @@ class Cpedict23Handler(ContentHandler):
         :returns: None
         """
 
-        if self.inCpelist:
-            self.inCpeitem = False
+        self.inCpeitem = False
 
-            # Check if CPE Name version 2.2 is valid
-            cpe_str = self.cpeitem[self.ATT_CPEITEM_NAME]
+        # Check if CPE Name version 2.2 is valid
+        cpe_str = self.cpeitem[self.ATT_CPEITEM_NAME]
+        try:
+            CPE(cpe_str, CPE.VERSION_2_2)
+        except:
+            # TODO: create parser exception
+            raise
+        else:
+            # Check if CPE Name version 2.3 is valid
+            cpe23_str = self.cpeitem23[self.ATT_CPEITEM_23_NAME]
+
             try:
-                CPE(cpe_str, CPE.VERSION_2_2)
+                cpe23 = CPE(cpe23_str, CPE.VERSION_2_3)
             except:
                 # TODO: create parser exception
                 raise
             else:
-                # Check if CPE Name version 2.3 is valid
-                cpe23_str = self.cpeitem23[self.ATT_CPEITEM_23_NAME]
+                # Convert CPE Name version 2.3 in WFN style
+                # because it is the default style in database
 
-                try:
-                    cpe23 = CPE(cpe23_str, CPE.VERSION_2_3)
-                except:
-                    # TODO: create parser exception
-                    raise
+                cpe23_wfn = CPE(cpe23.as_wfn(), CPE.VERSION_2_3)
+
+                part = cpe23_wfn.get_part()[0]
+                vendor = cpe23_wfn.get_vendor()[0]
+                product = cpe23_wfn.get_product()[0]
+                version = cpe23_wfn.get_version()[0]
+                update = cpe23_wfn.get_update()[0]
+                edition = cpe23_wfn.get_edition()[0]
+                sw_edition = cpe23_wfn.get_software_edition()[0]
+                target_sw = cpe23_wfn.get_target_software()[0]
+                target_hw = cpe23_wfn.get_target_hardware()[0]
+                other = cpe23_wfn.get_other()[0]
+                language = cpe23_wfn.get_language()[0]
+
+                # Find out if cpedata exists already
+                cpe_list = CpeData.objects.filter(part=part,
+                                                  vendor=vendor,
+                                                  product=product,
+                                                  version=version,
+                                                  update=update,
+                                                  edition=edition,
+                                                  sw_edition=sw_edition,
+                                                  target_sw=target_sw,
+                                                  target_hw=target_hw,
+                                                  other=other,
+                                                  language=language)
+                if len(cpe_list) == 0:
+                    # Save the new cpedata element
+
+                    cpedata = CpeData(part=part,
+                                      vendor=vendor,
+                                      product=product,
+                                      version=version,
+                                      update=update,
+                                      edition=edition,
+                                      sw_edition=sw_edition,
+                                      target_sw=target_sw,
+                                      target_hw=target_hw,
+                                      other=other,
+                                      language=language)
+
+                    cpedata.save()
                 else:
-                    # Convert CPE Name version 2.3 in WFN style
-                    # because it is the default style in database
+                    # Get the cpedata stored in the database
+                    cpedata = cpe_list[0]
 
-                    cpe23_wfn = CPE(cpe23.as_wfn(), CPE.VERSION_2_3)
+                # Save the cpeitem element
 
-                    part = cpe23_wfn.get_part()[0]
-                    vendor = cpe23_wfn.get_vendor()[0]
-                    product = cpe23_wfn.get_product()[0]
-                    version = cpe23_wfn.get_version()[0]
-                    update = cpe23_wfn.get_update()[0]
-                    edition = cpe23_wfn.get_edition()[0]
-                    sw_edition = cpe23_wfn.get_software_edition()[0]
-                    target_sw = cpe23_wfn.get_target_software()[0]
-                    target_hw = cpe23_wfn.get_target_hardware()[0]
-                    other = cpe23_wfn.get_other()[0]
-                    language = cpe23_wfn.get_language()[0]
+                depre = self.cpeitem23[self.ATT_CPEITEM_23_DEPRECATED]
+                depdate = self.cpeitem23[self.ATT_CPEITEM_23_DEPDATE]
 
-                    # Find out if cpedata exists already
-                    cpe_list = CpeData.objects.filter(part=part,
-                                                      vendor=vendor,
-                                                      product=product,
-                                                      version=version,
-                                                      update=update,
-                                                      edition=edition,
-                                                      sw_edition=sw_edition,
-                                                      target_sw=target_sw,
-                                                      target_hw=target_hw,
-                                                      other=other,
-                                                      language=language)
-                    if len(cpe_list) == 0:
-                        # Save the new cpedata element
+                self.cpeitem23_db = CpeItem(deprecated=depre,
+                                            deprecation_date=depdate,
+                                            name=cpedata,
+                                            cpelist=self.cpelist)
+                self.cpeitem23_db.save()
 
-                        cpedata = CpeData(part=part,
-                                          vendor=vendor,
-                                          product=product,
-                                          version=version,
-                                          update=update,
-                                          edition=edition,
-                                          sw_edition=sw_edition,
-                                          target_sw=target_sw,
-                                          target_hw=target_hw,
-                                          other=other,
-                                          language=language)
+                if len(self.titles) > 0:
+                    # Title elements must be saved after cpe-item element
+                    # because of the dependency between each other
+                    for tit in self.titles:
+                        tit.cpeitem = self.cpeitem23_db
+                        tit.save()
 
-                        cpedata.save()
-                    else:
-                        # Get the cpedata stored in the database
-                        cpedata = cpe_list[0]
-
-                    # Save the cpeitem element
-
-                    depre = self.cpeitem23[self.ATT_CPEITEM_23_DEPRECATED]
-                    depdate = self.cpeitem23[self.ATT_CPEITEM_23_DEPDATE]
-
-                    self.cpeitem23_db = CpeItem(deprecated=depre,
-                                                deprecation_date=depdate,
-                                                name=cpedata,
-                                                cpelist=self.cpelist)
-                    self.cpeitem23_db.save()
-
-                    if len(self.titles) > 0:
-                        # Title elements must be saved after cpeitem element
-                        # because of the dependency between each other
-                        for tit in self.titles:
-                            tit.cpeitem = self.cpeitem23_db
-                            tit.save()
-
-    def _endTitle(self, name):
-        """
-        Analyzes the input ending tag corresponds to a title element.
-
-        :param string name: The ending tag name of element
-        :returns: None
-        """
-
-        if self.inCpelist:
-            self.inTitle = False
+                if len(self.notes) > 0:
+                    # Note elements must be saved after cpe-item element
+                    # because of the dependency between each other
+                    for note in self.notes:
+                        note.cpeitem = self.cpeitem23_db
+                        note.save()
 
     def endElement(self, name):
         """
@@ -407,29 +444,45 @@ class Cpedict23Handler(ContentHandler):
         if name == self.TAG_CPELIST:
             self.inCpelist = False
 
-        # ----- GENERATOR ------
+        elif self.inCpelist:
 
-        elif name == self.TAG_GEN:
-            self._endGenerator(name)
-        elif name == self.TAG_PROD_NAME:
-            if self.inGenerator:
-                self.inGenProdName = False
-        elif name == self.TAG_PROD_VER:
-            if self.inGenerator:
-                self.inGenProdVer = False
-        elif name == self.TAG_SCHEMA_VER:
-            if self.inGenerator:
-                self.inGenSchemaVer = False
-        elif name == self.TAG_TIMESTAMP:
-            if self.inGenerator:
-                self.inGenTimestamp = False
+            # ----- GENERATOR ------
 
-        # ------ CPE-ITEM ------
+            if name == self.TAG_GEN:
+                self._endGenerator(name)
 
-        elif name == self.TAG_CPEITEM:
-            self._endCpeItem(name)
+            elif self.inGenerator:
 
-        # ------- TITLE --------
+                if name == self.TAG_PROD_NAME:
+                    self.inGenProdName = False
 
-        elif name == self.TAG_TITLE:
-            self._endTitle(name)
+                elif name == self.TAG_PROD_VER:
+                    self.inGenProdVer = False
+
+                elif name == self.TAG_SCHEMA_VER:
+                    self.inGenSchemaVer = False
+
+                elif name == self.TAG_TIMESTAMP:
+                    self.inGenTimestamp = False
+
+            # ------ CPE-ITEM ------
+
+            elif name == self.TAG_CPEITEM:
+                self._endCpeItem(name)
+
+            elif self.inCpeitem:
+
+                # ------- TITLE --------
+
+                if name == self.TAG_TITLE:
+                    self.inTitle = False
+
+                # -------- NOTE --------
+
+                elif name == self.TAG_NOTE_LIST:
+                    self.inNotelist = False
+
+                elif self.inNotelist:
+
+                    if name == self.TAG_NOTE:
+                        self.inNote = False

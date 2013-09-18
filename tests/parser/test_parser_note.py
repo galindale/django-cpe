@@ -4,7 +4,7 @@
 This file is part of django-cpe package.
 
 This module contains the tests to check import operation with the parser
-associated with title elements in a CPE Dictionary version 2.3 as XML file.
+associated with note elements in a CPE Dictionary version 2.3 as XML file.
 
 Copyright (C) 2013  Alejandro Galindo García, Roberto Abdelkader Martínez Pérez
 
@@ -32,21 +32,21 @@ import pytest
 
 from djangocpe.cpedict_parser import CpedictParser
 from djangocpe.cpedict23_handler import Cpedict23Handler
-from djangocpe.models import Title
+from djangocpe.models import Note
 
 from cpe.cpe import CPE
 
 
 @pytest.mark.django_db
-class TestCpe23Title:
+class TestCpe23Note:
     """
-    Tests to check import operation with a title element
+    Tests to check import operation with a note element
     in CPE dictionary as XML file.
     """
 
-    def _check_title(self, xmlpath, title):
+    def _check_note(self, xmlpath, note):
         """
-        Get the title values and check if they are saved correctly
+        Get the note values and check if they are saved correctly
         in database.
         """
 
@@ -57,50 +57,49 @@ class TestCpe23Title:
         # Execute parser with input XML file
         p.parse(xmlpath)
 
-        # Read title element stored in database
-        title_list = Title.objects.filter(title=title.title,
-                                          language=title.language)
-        title_db = title_list[0]
+        # Read note element stored in database
+        note_list = Note.objects.filter(language=note.language)
+        note_db = note_list[0]
 
-        # Check if test title element is stored in database
-        assert title_db.title == title.title
-        assert title_db.language == title.language
+        # Check if test note element is stored in database
+        assert note_db.note == note.note
+        assert note_db.language == note.language
 
-    def test_good_title_one(self):
+    def test_good_note_one(self):
         """
-        Check the import of a title element.
+        Check the import of a note element.
         """
 
         # XML CPE Dictionary path
-        XML_PATH = './xml/cpedict_v2.3_title_one.xml'
+        XML_PATH = './xml/cpedict_v2.3_note_one.xml'
 
         # Generator values
-        title = "1024cms.org 1024 CMS 1.4.1"
+        note = "Use product number and detail plain name"
         language = "en-US"
 
-        title_db = Title(title=title, language=language)
+        note_db = Note(note=note, language=language)
 
-        # Check title element
-        self._check_title(XML_PATH, title_db)
+        # Check note element
+        self._check_note(XML_PATH, note_db)
 
-    def test_good_title_two(self):
+    def test_good_note_two(self):
         """
-        Check the import of two title elements.
+        Check the import of two note elements.
         """
 
         # XML CPE Dictionary path
-        XML_PATH = './xml/cpedict_v2.3_title_two.xml'
+        XML_PATH = './xml/cpedict_v2.3_note_two.xml'
 
-        # Check first title element
-        title1 = "Elemata CMS 3.0 release candidate"
+        # Check first note element
+        note1 = "Use product number and detail plain name"
         language1 = "en-US"
-        title1_db = Title(title=title1, language=language1)
+        note1_db = Note(note=note1, language=language1)
 
-        self._check_title(XML_PATH, title1_db)
+        self._check_note(XML_PATH, note1_db)
 
-        # Check second title element
-        title2 = u"Elemata CMS 3.0 version candidata"
-        language2 = "es-es"
-        title2_db = Title(title=title2, language=language2)
+        # Check second note element
+        note2 = u"Usa el numero de producto y el nombre detallado"
+        language2 = "es-ES"
+        note2_db = Note(note=note2, language=language2)
 
-        self._check_title(XML_PATH, title2_db)
+        self._check_note(XML_PATH, note2_db)
