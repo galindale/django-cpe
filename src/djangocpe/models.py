@@ -246,7 +246,7 @@ class CpeItem(models.Model):
         else:
             depre_str = "no anulado"
 
-        return u'{0} ({1})'.format(self.name.__unicode__(), depre_str)
+        return u'{0} ({1})'.format(depre_str, self.deprecation_date)
 
 
 class Generator(models.Model):
