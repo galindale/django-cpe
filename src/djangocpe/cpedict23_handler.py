@@ -83,8 +83,7 @@ class Cpedict23Handler(ContentHandler):
         # ------ CPE-LIST ------
 
         self.inCpelist = False
-        self.cpelist = dict()
-        self.cpelist_db = None
+        self.cpelist = CpeList()
 
         # ------ GENERATOR ------
 
@@ -95,96 +94,80 @@ class Cpedict23Handler(ContentHandler):
         self.inGenSchemaVer = False
         self.inGenTimestamp = False
 
-        self.generator = dict()
+        self.generator = Generator()
 
         # ------- CPE-ITEM ------
 
         self.inCpeitem = False
         self.cpeitem = dict()
-        self.cpeitem_db = None
 
         # ------ CPE23-ITEM -----
 
         self.cpeitem23 = dict()
+        self.cpeitem23_db = None
 
         # -------- TITLE --------
 
         self.inTitle = False
-        self.title = dict()
+        self.titles = []
 
     def _startCpeList(self, name, attributes):
         """
-        Returns True if the input opening tag corresponds
-        to a cpe-list element.
-        In this case, the opening tag is analyzed.
+        Analyzes the input opening tag corresponds to a cpe-list element.
 
-        :param string name: The opening tag name of an element
+        :param string name: The opening tag name of element
         :param Atributes attributes: List of element attributes
-        :returns: Returns True if the input opening tag corresponds to a
-        cpe-list element
-        :rtype: boolean
+        :returns: None
         """
 
         self.inCpelist = True
 
-        # Save the cpe list element
+        # Store values of cpe list element
 
         timenow = iso8601.datetime.now().isoformat()
-        self.cpelist_db = CpeList(name=timenow)
-        self.cpelist_db.save()
+        self.cpelist.name = timenow
+        self.cpelist.save()
 
     def _startGenerator(self, name, attributes):
         """
-        Returns True if the input opening tag corresponds
-        to a generator element (or some of its subelements).
-        In this case, the opening tag is analyzed.
+        Analyzes the input opening tag corresponds to a generator element.
 
-        :param string name: The opening tag name of an element
+        :param string name: The opening tag name of element
         :param Atributes attributes: List of element attributes
-        :returns: Returns True if the input opening tag corresponds to a
-        generator element (or some of its subelements)
-        :rtype: boolean
+        :returns: None
         """
 
         if self.inCpelist:
             self.inGenerator = True
 
-            # Initializes the dictionary of generator element
-            self.generator[self.TAG_PROD_NAME] = ""
-            self.generator[self.TAG_PROD_VER] = ""
-            self.generator[self.TAG_SCHEMA_VER] = ""
-            self.generator[self.TAG_TIMESTAMP] = ""
+            # Initializes the optional attributes of generator element
+            self.generator.product_name = ""
+            self.generator.product_version = ""
 
     def _startCpeItem(self, name, attributes):
         """
-        Returns True if the input opening tag corresponds
-        to a cpe-item element.
-        In this case, the opening tag is analyzed.
+        Analyzes the input opening tag corresponds to a cpe-item element.
 
-        :param string name: The opening tag name of an element
+        :param string name: The opening tag name of element
         :param Atributes attributes: List of element attributes
-        :returns: Returns True if the input opening tag corresponds to a
-        cpe-item element
-        :rtype: boolean
+        :returns: None
         """
 
         if self.inCpelist:
             self.inCpeitem = True
 
+            # This name corresponds to version 2.2 of CPE.
+            # It is necessary to check valid name but not save in database
             name = attributes.get(self.ATT_CPEITEM_NAME)
             self.cpeitem[self.ATT_CPEITEM_NAME] = name
 
     def _startCpeItem23(self, name, attributes):
         """
-        Returns True if the input opening tag corresponds
-        to a cpe23-item element.
-        In this case, the opening tag is analyzed.
+        Analyzes the input opening tag corresponds to a cpe23-item element.
 
-        :param string name: The opening tag name of an element
+        :param string name: The opening tag name of element
         :param Atributes attributes: List of element attributes
-        :returns: Returns True if the input opening tag corresponds to a
-        cpe23-item element
-        :rtype: boolean
+        :returns: None
         """
 
         if self.inCpeitem:
@@ -201,28 +184,27 @@ class Cpedict23Handler(ContentHandler):
 
     def _startTitle(self, name, attributes):
         """
-        Returns True if the input opening tag corresponds
-        to a title element.
-        In this case, the opening tag is analyzed.
+        Analyzes the input opening tag corresponds to a title element.
 
-        :param string name: The opening tag name of an element
+        :param string name: The opening tag name of element
         :param Atributes attributes: List of element attributes
-        :returns: Returns True if the input opening tag corresponds to a
-        title element
-        :rtype: boolean
+        :returns: None
         """
 
         if self.inCpeitem:
             self.inTitle = True
 
             language = attributes.get(self.ATT_TITLE_LANG)
-            self.title[self.ATT_TITLE_LANG] = language
+            title_values = Title()
+            title_values.language = language
+
+            self.titles.append(title_values)
 
     def startElement(self, name, attributes):
         """
         Analyzes the input opening tag of an element.
 
-        :param string name: The tag name
+        :param string name: The opening tag name of element
         :param Attributes attributes: List of element attributes
         :returns: None
         """
@@ -265,7 +247,7 @@ class Cpedict23Handler(ContentHandler):
 
     def characters(self, chars):
         """
-        Analyze the content of XML elements.
+        Analyzes the content of a XML element.
 
         :param string chars: The content of element as string
         :returns: None
@@ -275,30 +257,27 @@ class Cpedict23Handler(ContentHandler):
 
         if self.inGenerator:
             if self.inGenProdName:
-                self.generator[self.TAG_PROD_NAME] = chars
+                self.generator.product_name = chars
             if self.inGenProdVer:
-                self.generator[self.TAG_PROD_VER] = chars
+                self.generator.product_version = chars
             if self.inGenSchemaVer:
-                self.generator[self.TAG_SCHEMA_VER] = chars
+                self.generator.schema_version = chars
             if self.inGenTimestamp:
-                self.generator[self.TAG_TIMESTAMP] = chars
+                self.generator.timestamp = chars
 
         # -------- TITLE -------
 
         elif self.inCpeitem:
             if self.inTitle:
-                self.title[self.TAG_TITLE] = chars
+                # Set the title of last title element found
+                self.titles[-1].title = chars
 
     def _endGenerator(self, name):
         """
-        Returns True if the input ending tag
-        corresponds to a generator element (or some of its subelements).
-        In this case, the ending tag is analyzed.
+        Analyzes the input ending tag corresponds to a generator element.
 
         :param string name: The ending tag name of an element
-        :returns: Returns True if the input ending tag corresponds to a
-        generator element (or some of its subelements)
-        :rtype: boolean
+        :returns: None
         """
 
         if self.inCpelist:
@@ -306,27 +285,15 @@ class Cpedict23Handler(ContentHandler):
 
             # Save the generator element
 
-            pn = self.generator[self.TAG_PROD_NAME]
-            pv = self.generator[self.TAG_PROD_VER]
-            sv = self.generator[self.TAG_SCHEMA_VER]
-            ts = self.generator[self.TAG_TIMESTAMP]
-
-            gen = Generator(product_name=pn,
-                            product_version=pv,
-                            schema_version=sv,
-                            timestamp=ts,
-                            cpelist=self.cpelist_db)
-            gen.save()
+            self.generator.cpelist = self.cpelist
+            self.generator.save()
 
     def _endCpeItem(self, name):
         """
-        Returns True if the input ending tag corresponds to a cpe-item element.
-        In this case, the ending tag is analyzed.
+        Analyzes the input ending tag corresponds to a cpe-item element.
 
-        :param string name: The ending tag name of an element
-        :returns: Returns True if the input ending tag corresponds to a
-        cpe-item element
-        :rtype: boolean
+        :param string name: The ending tag name of element
+        :returns: None
         """
 
         if self.inCpelist:
@@ -403,32 +370,25 @@ class Cpedict23Handler(ContentHandler):
                     depre = self.cpeitem23[self.ATT_CPEITEM_23_DEPRECATED]
                     depdate = self.cpeitem23[self.ATT_CPEITEM_23_DEPDATE]
 
-                    self.cpeitem_db = CpeItem(deprecated=depre,
-                                              deprecation_date=depdate,
-                                              name=cpedata,
-                                              cpelist=self.cpelist_db)
-                    self.cpeitem_db.save()
+                    self.cpeitem23_db = CpeItem(deprecated=depre,
+                                                deprecation_date=depdate,
+                                                name=cpedata,
+                                                cpelist=self.cpelist)
+                    self.cpeitem23_db.save()
 
-                    if len(self.title) > 0:
-                        # Title element must be saved after cpeitem element
+                    if len(self.titles) > 0:
+                        # Title elements must be saved after cpeitem element
                         # because of the dependency between each other
-                        title = self.title[self.TAG_TITLE]
-                        language = self.title[self.ATT_TITLE_LANG]
-
-                        self.title_db = Title(title=title,
-                                              language=language,
-                                              cpeitem=self.cpeitem_db)
-                        self.title_db.save()
+                        for tit in self.titles:
+                            tit.cpeitem = self.cpeitem23_db
+                            tit.save()
 
     def _endTitle(self, name):
         """
-        Returns True if the input ending tag corresponds to a title element.
-        In this case, the ending tag is analyzed.
+        Analyzes the input ending tag corresponds to a title element.
 
-        :param string name: The ending tag name of an element
-        :returns: Returns True if the input ending tag corresponds to a
-        title element
-        :rtype: boolean
+        :param string name: The ending tag name of element
+        :returns: None
         """
 
         if self.inCpelist:
@@ -438,7 +398,7 @@ class Cpedict23Handler(ContentHandler):
         """
         Analyzes the input ending tag of an element.
 
-        :param string name: The tag name
+        :param string name: The ending tag name
         :returns: None
         """
 

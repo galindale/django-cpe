@@ -36,6 +36,7 @@ from djangocpe.models import Title
 
 from cpe.cpe import CPE
 
+
 @pytest.mark.django_db
 class TestCpe23iTitle:
     """
@@ -43,7 +44,7 @@ class TestCpe23iTitle:
     in CPE dictionary as XML file.
     """
 
-    def _check_title(self, xmlpath, title, language):
+    def _check_title(self, xmlpath, title):
         """
         Get the title values and check if they are saved correctly
         in database.
@@ -57,11 +58,15 @@ class TestCpe23iTitle:
         p.parse(xmlpath)
 
         # Read title element stored in database
-        title_db = Title.objects.get(title=title, language=language)
+        title_list = Title.objects.filter(title=title.title,
+                                          language=title.language)
+        #title_db = title_list[0]
+        print title_list
+        print title
 
         # Check if test title element is stored in database
-        assert title_db.title == title
-        assert title_db.language == language
+        #assert title_db.title == title.title
+        #assert title_db.language == title.language
 
     def test_good_title_one(self):
         """
@@ -75,22 +80,28 @@ class TestCpe23iTitle:
         title = "1024cms.org 1024 CMS 1.4.1"
         language = "en-US"
 
-        # Check title element
-        self._check_title(XML_PATH, title, language)
+        title_db = Title(title=title, language=language)
 
-#    def test_good_gen_all_fields(self):
-#        """
-#        Check the import of a generator element with all fields filled.
-#        """
-#
-#        # XML CPE Dictionary path
-#        XML_PATH = './xml/cpedict_v2.3_generator_all_fields.xml'
-#
-#        # Generator values
-#        pn = "National Vulnerability Database (NVD)"
-#        pv = "2.20.0-SNAPSHOT (PRODUCTION)"
-#        sv = 2.3
-#        ts = iso8601.parse_date("2013-09-05T03:50:00.193Z")
-#
-#        # Check generator element
-#        self._check_generator(XML_PATH, pn, pv, sv, ts)
+        # Check title element
+        self._check_title(XML_PATH, title_db)
+
+    def test_good_title_two(self):
+        """
+        Check the import of two title elements.
+        """
+
+        # XML CPE Dictionary path
+        XML_PATH = './xml/cpedict_v2.3_title_two.xml'
+
+        # Values of titles
+        title1 = "Elemata CMS 3.0 release candidate"
+        language1 = "en-US"
+        title1_db = Title(title=title1, language=language1)
+
+        title2 = u"Elemata CMS 3.0 versióandidata"
+        language2 = "es-es"
+        title2_db = Title(title=title2, language=language2)
+
+        # Check first title element
+        self._check_title(XML_PATH, title1_db)
+        self._check_title(XML_PATH, title2_db)
