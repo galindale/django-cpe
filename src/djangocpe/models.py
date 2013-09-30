@@ -1,9 +1,16 @@
+from cpe import CPE
 from cpe.cpe2_3_wfn import CPE2_3_WFN
 from cpe.comp.cpecomp import CPEComponent
 
 from django.core.exceptions import ValidationError
 from django.db import models
 from fields import URIField, LanguageField
+
+# South intrspection of custom fields of Django models
+from south.modelsinspector import add_introspection_rules
+
+add_introspection_rules([], ["^djangocpe\.fields\.URIField"])
+add_introspection_rules([], ["^djangocpe\.fields\.LanguageField"])
 
 
 # Used when the name is first added to the dictionary
@@ -25,6 +32,42 @@ CHANGE_TYPE_CHOICES = (
     (CHANGE_DEPRECATION_MODIFICATION, 'Deprecation modification')
 )
 
+
+def get_change_type_str(value):
+    """
+    Returns the text associated with the input change type.
+
+    :param int value: The change type to get
+    :returns: Text associated with the change type
+    :rtype: string
+    """
+
+    for k, v in CHANGE_TYPE_CHOICES:
+        if k == value:
+            return v
+
+    # Type not found
+    errormsg = "Invalid change type: {0}".format(value)
+    raise ValueError(errormsg)
+
+
+def get_change_type_int(value):
+    """
+    Returns the integer value associated with the input change type.
+
+    :param int value: The change type to get
+    :returns: Integer value associated with the change type
+    :rtype: int
+    """
+
+    for k, v in CHANGE_TYPE_CHOICES:
+        if v.uuper().replace(" ", "_") == value:
+            return k
+
+    # Type not found
+    errormsg = "Invalid change type: {0}".format(value)
+    raise ValueError(errormsg)
+
 # The curator of the dictionary discovered information that led to a change
 EVIDENCE_CURATOR_UPDATE = 1
 
@@ -41,6 +84,42 @@ EVIDENCE_TYPE_CHOICES = (
     (EVIDENCE_THIRD_PARTY_FIX, 'Third party fix')
 )
 
+
+def get_evidence_type_str(value):
+    """
+    Returns the text associated with the input evidence type.
+
+    :param int value: The evidence type to get
+    :returns: Text associated with the evidence type
+    :rtype: string
+    """
+
+    for k, v in EVIDENCE_TYPE_CHOICES:
+        if k == value:
+            return v
+
+    # Type not found
+    errormsg = "Invalid evidence type: {0}".format(value)
+    raise ValueError(errormsg)
+
+
+def get_evidence_type_int(value):
+    """
+    Returns the integer value associated with the input evidence type.
+
+    :param string value: The evidence type to get
+    :returns: Integer value associated with the evidence type
+    :rtype: int
+    """
+
+    for k, v in EVIDENCE_TYPE_CHOICES:
+        if v.upper().replace(" ", "_") == value:
+            return k
+
+    # Type not found
+    errormsg = "Invalid evidence type: {0}".format(value)
+    raise ValueError(errormsg)
+
 # Deprecation is of type Identifier Name Correction
 DEPRECATED_BY_NAME_CORRECTION = 1
 
@@ -56,6 +135,41 @@ DEPRECATED_BY_CHOICES = (
     (DEPRECATED_BY_ADDITIONAL_INFO, 'Additional information')
 )
 
+
+def get_deprecatedby_type_str(value):
+    """
+    Returns the text associated with the input deprecated-by type.
+
+    :param int value: The deprecated-by type to get
+    :returns: Text associated with the deprecated-by type
+    :rtype: string
+    """
+
+    for k, v in DEPRECATED_BY_CHOICES:
+        if k == value:
+            return v
+
+    # Type not found
+    errormsg = "Invalid deprecated-by type: {0}".format(value)
+    raise ValueError(errormsg)
+
+
+def get_deprecatedby_type_int(value):
+    """
+    Returns the integer value associated with the input deprecated-by type.
+
+    :param string value: The deprecated-by type to get
+    :returns: Integer value associated with the deprecated-by type
+    :rtype: int
+    """
+
+    for k, v in DEPRECATED_BY_CHOICES:
+        if v.upper().replace(" ", "_") == value:
+            return k
+
+    # Type not found
+    errormsg = "Invalid deprecated-by type: {0}".format(value)
+    raise ValueError(errormsg)
 
 # ################################
 #    MODEL CLASSES OF CPE DICT   #
@@ -156,8 +270,9 @@ class CpeData(models.Model):
 
         # Append the WFN suffix
         cpe_name.append(']')
+        cpe_wfn = CPE("".join(cpe_name), CPE.VERSION_2_3)
 
-        return "".join(cpe_name)
+        return cpe_wfn.as_fs()
 
     #def save(self, *args, **kwargs):
     #    # If object exists, save operation not executed
@@ -246,7 +361,12 @@ class CpeItem(models.Model):
         else:
             depre_str = "no anulado"
 
-        return u'{0} ({1})'.format(depre_str, self.deprecation_date)
+        if self.deprecation_date is None:
+            return u'{0} ({1})'.format(self.name, depre_str)
+        else:
+            return u'{0} ({1}) [{2}]'.format(self.name,
+                                             depre_str,
+                                             self.deprecation_date)
 
 
 class Generator(models.Model):
@@ -291,8 +411,7 @@ class Generator(models.Model):
         :rtype: string
         """
 
-        return u'producto ({0}) version ({1}) esquema ({2}) fecha ({3})'.format(
-            self.product_name, self.product_version,
+        return u'Version CPE {0} ({1})'.format(
             self.schema_version, self.timestamp)
 
 
@@ -425,7 +544,7 @@ class Check(models.Model):
         :rtype: string
         """
 
-        return u'{0} ({1})'.format(self.check_id, self.system)
+        return u'{0}'.format(self.check_id)
 
 
 # ################################################
@@ -446,7 +565,8 @@ class Organization(models.Model):
         help_text=u'Human readable name of the organization')
     action_datetime = models.DateTimeField(
         null=False,
-        help_text=u'The date the organization performed an action relative to an identifier name')
+        help_text=u'The date the organization performed an action \
+            relative to an identifier name')
     description = models.TextField(
         max_length=255, null=True, blank=True,
         help_text=u'A high-level description of the organization')
@@ -483,7 +603,13 @@ class Deprecation(models.Model):
         :rtype: string
         """
 
-        return u'{0}'.format(self.dep_datetime)
+        name = ""
+        try:
+            name = self.cpeitem.name
+        except:
+            name = "SIN ASIGNAR CPE"
+        finally:
+            return u'{0} ({1})'.format(name, self.dep_datetime)
 
 
 class DeprecatedBy(models.Model):
@@ -514,7 +640,7 @@ class DeprecatedBy(models.Model):
         """
 
         dep_type_text = DEPRECATED_BY_CHOICES[self.dep_type][1]
-        return u'{0} ({1})'.format(self.cpename, dep_type_text)
+        return u'{0} ({1})'.format(self.name, dep_type_text)
 
 
 class ProvenanceRecord(models.Model):
@@ -524,10 +650,12 @@ class ProvenanceRecord(models.Model):
 
     submitter = models.ForeignKey(
         Organization, null=False, related_name='submitter',
-        help_text=u'The organization responsible for submitting the identifier name')
+        help_text=u'The organization responsible for submitting \
+            the identifier name')
     authority = models.ManyToManyField(
         Organization, null=False, related_name='authority',
-        help_text=u'The authority or authorities responsible for endorsing the identifier name')
+        help_text=u'The authority or authorities responsible for \
+            endorsing the identifier name')
     cpeitem = models.ForeignKey(CpeItem, null=False)
 
     def __unicode__(self):
@@ -551,7 +679,8 @@ class EvidenceReference(models.Model):
         help_text=u'Unique URI representing the evidence reference')
     evidence = models.IntegerField(
         null=False, choices=EVIDENCE_TYPE_CHOICES,
-        help_text=u'Supporting evidence for any change to a name or associated metadata')
+        help_text=u'Supporting evidence for any change to a name or \
+            associated metadata')
 
     def __unicode__(self):
         """
@@ -581,7 +710,7 @@ class ChangeDescription(models.Model):
         max_length=255, null=True, blank=True,
         help_text=u'Comments explaining the rationale for the change')
     prov_record = models.ForeignKey(ProvenanceRecord, null=False)
-    evidence = models.ForeignKey(EvidenceReference, null=True)
+    evidence = models.ForeignKey(EvidenceReference, null=True, blank=True)
 
     def __unicode__(self):
         """

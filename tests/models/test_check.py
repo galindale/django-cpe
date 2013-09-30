@@ -43,29 +43,63 @@ class TestCheck:
     of CPE dictionary model.
     """
 
-    def test_good_check(self):
+    def test_good_check_min_fields(self):
         """
-        Check the creation of a correct check element.
+        Check the creation of a correct check element
+        with only required fields filled.
         """
 
-        # Create check element in database
+        # Create check element
         cpeitem = mommy.make(CpeItem)
         check = mommy.prepare(Check,
-                              file_ref="http://www.nist.gov",
-                              system_uri="http://oval.mitre.org",
-                              cpeitem=cpeitem)
+            system="http://oval.mitre.org/XMLSchema/oval-definitions-5",
+            cpeitem=cpeitem)
 
-        # Object validation
-        check.full_clean(['description'])
+        # Element validation
+        check.full_clean()
+
+        # Save element in database
         check.save()
 
-        # Load elem from database
-        check_db = Check.objects.get(file_ref=check.file_ref,
-                                     system_uri=check.system_uri)
+        # Load element from database
+        check_db = Check.objects.get(check_id=check.check_id,
+                                     system=check.system)
 
         assert check.id == check_db.id
+        assert check.check_id == check_db.check_id
+        assert check.href == check_db.href
+        assert check.system == check_db.system
 
-    def test_bad_check_file_ref(self):
+    def test_good_check_all_fields(self):
+        """
+        Check the creation of a correct check element
+        with all fields filled.
+        """
+
+        # Create check element
+        cpeitem = mommy.make(CpeItem)
+        check = mommy.prepare(Check,
+            href="http://oval.mitre.gov",
+            system="http://oval.mitre.org/XMLSchema/oval-definitions-5",
+            cpeitem=cpeitem)
+
+        # Element validation
+        check.full_clean()
+
+        # Save element in database
+        check.save()
+
+        # Load element from database
+        check_db = Check.objects.get(check_id=check.check_id,
+                                     href=check.href,
+                                     system=check.system)
+
+        assert check.id == check_db.id
+        assert check.check_id == check_db.check_id
+        assert check.href == check_db.href
+        assert check.system == check_db.system
+
+    def test_bad_check_ref(self):
         """
         Check the creation of a check element with an invalid
         file reference value.
@@ -74,31 +108,31 @@ class TestCheck:
         # TODO: test urn in system_uri, e. g., urn:ietf:rfc:2648
         cpeitem = mommy.make(CpeItem)
         check = mommy.prepare(Check,
-                              file_ref="baduri",
-                              system_uri="http://oval.mitre.org",
-                              cpeitem=cpeitem)
+            href="baduri",
+            system="http://oval.mitre.org",
+            cpeitem=cpeitem)
 
         with pytest.raises(ValidationError) as e:
-            check.full_clean(['description'])
+            check.full_clean()
 
-        assert 'file_ref' in e.value.message_dict
+        assert 'href' in e.value.message_dict
         assert 'system_uri' not in e.value.message_dict
 
-    def test_bad_check_system_uri(self):
+    def test_bad_check_system(self):
         """
         Check the creation of a check element with an invalid
-        system uri value.
+        system value.
         """
 
         # TODO: test urn in file_ref, e. g., urn:ietf:rfc:2648
         cpeitem = mommy.make(CpeItem)
         check = mommy.prepare(Check,
-                              file_ref="http://oval.mitre.org",
-                              system_uri="baduri",
-                              cpeitem=cpeitem)
+            href="http://oval.mitre.org",
+            system="baduri",
+            cpeitem=cpeitem)
 
         with pytest.raises(ValidationError) as e:
-            check.full_clean(['description'])
+            check.full_clean()
 
-        assert 'file_ref' not in e.value.message_dict
-        assert 'system_uri' in e.value.message_dict
+        assert 'href' not in e.value.message_dict
+        assert 'system' in e.value.message_dict

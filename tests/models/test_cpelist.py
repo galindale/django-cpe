@@ -42,16 +42,34 @@ class TestCpeList:
     of CPE dictionary model.
     """
 
-    def test_good_cpelist(self, good_cpedata):
+    def test_good_cpelist_min_fields(self, good_cpedata):
         """
-        Check the creation of a correct cpe-list element.
+        Check the creation of a correct cpe-list element
+        with only required fields filled.
         """
 
         # Save elem in database
-        clist = mommy.prepare('djangocpe.CpeList')
+        clist = mommy.prepare(CpeList)
         clist.save()
 
         # Load elem from database
         clist_db = CpeList.objects.get(name=clist.name)
 
         assert clist.id == clist_db.id
+        assert clist.name == clist_db.name
+
+    def test_good_cpelist_all_fields(self, good_cpedata):
+        """
+        Check the creation of a correct cpe-list element
+        with all fields filled.
+        """
+
+        # Save elem in database
+        clist = mommy.prepare(CpeList, name="Clist name")
+        clist.save()
+
+        # Load elem from database
+        clist_db = CpeList.objects.get(name=clist.name)
+
+        assert clist.id == clist_db.id
+        assert clist.name == clist_db.name

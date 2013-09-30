@@ -34,7 +34,7 @@ from django.utils import timezone
 from model_mommy import mommy
 
 from djangocpe.models import CpeItem, CpeList
-from tests.fixtures import good_cpedata
+from .fixtures import good_cpedata
 
 
 @pytest.mark.django_db
@@ -44,9 +44,45 @@ class TestCpeItem:
     of CPE dictionary model.
     """
 
-    def test_good_cpeitem(self, good_cpedata):
+    def test_good_cpeitem_min_fields(self, good_cpedata):
         """
-        Check the creation of a correct cpe-item element.
+        Check the creation of a correct cpe-item element
+        with all fields filled.
+        """
+
+        # Create CPE list element in database
+        clist = mommy.make(CpeList)
+
+        # Create a cpe data element in database
+        cpename = good_cpedata
+        cpename.full_clean()
+        cpename.save()
+
+        # Create and save cpe item
+        cpeitem = CpeItem(name=cpename,
+                          cpelist=clist)
+
+        cpeitem.save()
+
+        # Load elem from database
+        cpeitem_db = CpeItem.objects.get(
+            name=cpeitem.name,
+            deprecated=cpeitem.deprecated,
+            deprecation_date=cpeitem.deprecation_date,
+            deprecated_by=cpeitem.deprecated_by,
+            cpelist=cpeitem.cpelist)
+
+        assert cpeitem.id == cpeitem_db.id
+        assert cpeitem.name == cpeitem_db.name
+        assert cpeitem.deprecated == cpeitem_db.deprecated
+        assert cpeitem.deprecation_date == cpeitem_db.deprecation_date
+        assert cpeitem.deprecated_by == cpeitem_db.deprecated_by
+        assert cpeitem.cpelist == cpeitem_db.cpelist
+
+    def test_good_cpeitem_all_fields(self, good_cpedata):
+        """
+        Check the creation of a correct cpe-item element
+        with all fields filled.
         """
 
         # Create CPE list element in database
@@ -54,30 +90,36 @@ class TestCpeItem:
 
         # Create two cpe data elements in database
         cpename = good_cpedata
-        cpename.full_clean(['description'])
+        cpename.full_clean()
         cpename.save()
 
         cpedepre = good_cpedata
         cpedepre.part = '"h"'
-        cpedepre.full_clean(['description'])
+        cpedepre.full_clean()
         cpedepre.save()
 
         # Create and save cpe item
         deprecated = False
         date = timezone.now()
-        cpeitem = CpeItem(cpename=cpename,
-                          deprecated=deprecated, deprecation_date=date,
+        cpeitem = CpeItem(name=cpename,
+                          deprecated=deprecated,
+                          deprecation_date=date,
                           deprecated_by=cpedepre,
                           cpelist=clist)
 
         cpeitem.save()
 
         # Load elem from database
-        cpeitem_db = CpeItem.objects.get(cpename=cpename,
-                                         deprecated=deprecated,
-                                         deprecation_date=date,
-                                         deprecated_by=cpedepre,
-                                         cpelist=clist)
+        cpeitem_db = CpeItem.objects.get(
+            name=cpeitem.name,
+            deprecated=cpeitem.deprecated,
+            deprecation_date=cpeitem.deprecation_date,
+            deprecated_by=cpeitem.deprecated_by,
+            cpelist=cpeitem.cpelist)
 
         assert cpeitem.id == cpeitem_db.id
-        assert cpename.id == cpeitem_db.cpename.id
+        assert cpeitem.name == cpeitem_db.name
+        assert cpeitem.deprecated == cpeitem_db.deprecated
+        assert cpeitem.deprecation_date == cpeitem_db.deprecation_date
+        assert cpeitem.deprecated_by == cpeitem_db.deprecated_by
+        assert cpeitem.cpelist == cpeitem_db.cpelist

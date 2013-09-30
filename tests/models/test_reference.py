@@ -43,35 +43,40 @@ class TestReference:
     of CPE dictionary model.
     """
 
-    def test_good_reference(self):
+    def test_good_reference_all_fields(self):
         """
-        Check the creation of a correct reference element.
+        Check the creation of a correct reference element
+        with all fields filled.
         """
 
         # Create reference element in database
         cpeitem = mommy.make(CpeItem)
         ref = mommy.prepare(Reference,
-                            url="http://www.mitre.org",
+                            href="http://www.mitre.org",
                             cpeitem=cpeitem)
 
-        # Object validation
-        ref.full_clean(['description'])
+        # Element validation
+        ref.full_clean()
+
+        # Save element in database
         ref.save()
 
         # Load elem from database
         ref_db = Reference.objects.get(name=ref.name,
-                                       url=ref.url)
+                                       href=ref.href)
 
         assert ref.id == ref_db.id
+        assert ref.name == ref_db.name
+        assert ref.href == ref_db.href
 
     def test_bad_reference_uri(self):
         """
         Check the creation of a reference element with an invalid URI value.
         """
 
-        ref = mommy.prepare(Reference, url="baduri")
+        ref = mommy.prepare(Reference, href="baduri")
 
         with pytest.raises(ValidationError) as e:
-            ref.full_clean(['description'])
+            ref.full_clean()
 
-        assert 'url' in str(e.value)
+        assert 'href' in str(e.value)

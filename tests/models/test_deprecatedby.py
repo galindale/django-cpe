@@ -3,7 +3,7 @@
 """
 This file is part of django-cpe package.
 
-This module contains the tests to check operations of deprecation elements of
+This module contains the tests to check operations of deprecated-by elements of
 CPE dictionary model.
 
 Copyright (C) 2013  Alejandro Galindo García, Roberto Abdelkader Martínez Pérez
@@ -41,16 +41,19 @@ from .fixtures import good_cpedata
 @pytest.mark.django_db
 class TestDeprecatedBy:
     """
-    Tests to check operations with deprecated by elements
+    Tests to check operations with deprecated-by elements
     of CPE dictionary model.
     """
 
-    def test_good_deprecatedby(self, good_cpedata):
+    #: Bad value in deprecation type attribute of DeprecatedBy model
+    BAD_DEP_TYPE = -1
+
+    def test_good_deprecatedby_all_fields(self, good_cpedata):
         """
-        Check the creation of a correct deprecated by element.
+        Check the creation of a correct deprecated-by element.
         """
 
-        # Create element
+        # Create deprecated-by element
         good_cpedata.full_clean()
         good_cpedata.save()
 
@@ -58,8 +61,9 @@ class TestDeprecatedBy:
 
         dep_type = DEPRECATED_BY_NAME_CORRECTION
         depby = DeprecatedBy(dep_type=dep_type,
-                             cpename=good_cpedata,
+                             name=good_cpedata,
                              deprecation=dep)
+
         # Element validation
         depby.full_clean()
 
@@ -68,14 +72,17 @@ class TestDeprecatedBy:
 
         # Load elem from database
         depby_db = DeprecatedBy.objects.get(dep_type=depby.dep_type,
-                                            cpename=depby.cpename,
+                                            name=depby.name,
                                             deprecation=depby.deprecation)
 
         assert depby.id == depby_db.id
+        assert depby.name == depby_db.name
+        assert depby.dep_type == depby_db.dep_type
+        assert depby.deprecation == depby_db.deprecation
 
     def test_bad_deprecatedby_type(self, good_cpedata):
         """
-        Check the creation of a deprecated by elementç
+        Check the creation of a deprecated-by element
         with an invalid deprecation type.
         """
 
@@ -85,12 +92,13 @@ class TestDeprecatedBy:
 
         dep = mommy.make(Deprecation)
 
-        dep_type = -1
+        dep_type = self.BAD_DEP_TYPE
         depby = DeprecatedBy(dep_type=dep_type,
-                             cpename=good_cpedata,
+                             name=good_cpedata,
                              deprecation=dep)
 
         # Element validation
         with pytest.raises(ValidationError) as e:
             depby.full_clean()
+
         assert 'dep_type' in e.value.message_dict

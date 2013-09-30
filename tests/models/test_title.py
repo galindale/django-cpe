@@ -43,17 +43,20 @@ class TestTitle:
     of CPE dictionary model.
     """
 
-    def test_good_title(self):
+    def test_good_title_all_fields(self):
         """
-        Check the creation of a correct title element.
+        Check the creation of a correct title element
+        with all fields filled.
         """
 
         # Create title element in database
         cpeitem = mommy.make(CpeItem)
         t = mommy.prepare(Title, language="es-ES", cpeitem=cpeitem)
 
-        # Object validation
-        t.full_clean(['description'])
+        # Element validation
+        t.full_clean()
+
+        # Save element in database
         t.save()
 
         # Load elem from database
@@ -61,6 +64,8 @@ class TestTitle:
                                      language=t.language)
 
         assert t.id == title_db.id
+        assert t.title == title_db.title
+        assert t.language == title_db.language
 
     def test_bad_title_language(self):
         """
@@ -70,6 +75,6 @@ class TestTitle:
         t = mommy.prepare(Title, language="es**ES")
 
         with pytest.raises(ValidationError) as e:
-            t.full_clean(['description'])
+            t.full_clean()
 
         assert 'language' in str(e.value)

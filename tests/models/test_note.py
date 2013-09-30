@@ -43,17 +43,20 @@ class TestNote:
     of CPE dictionary model.
     """
 
-    def test_good_note(self):
+    def test_good_note_all_fields(self):
         """
-        Check the creation of a correct note element.
+        Check the creation of a correct note element
+        with all fields filled.
         """
 
         # Create note element in database
         cpeitem = mommy.make(CpeItem)
         n = mommy.prepare(Note, language="es-es", cpeitem=cpeitem)
 
-        # Object validation
-        n.full_clean(['description'])
+        # Element validation
+        n.full_clean()
+
+        # Save element in database
         n.save()
 
         # Load elem from database
@@ -61,6 +64,8 @@ class TestNote:
                                    language=n.language)
 
         assert n.id == note_db.id
+        assert n.note == note_db.note
+        assert n.language == note_db.language
 
     def test_bad_note_language(self):
         """
@@ -70,6 +75,6 @@ class TestNote:
         n = mommy.prepare(Note, language="es**ES")
 
         with pytest.raises(ValidationError) as e:
-            n.full_clean(['description'])
+            n.full_clean()
 
         assert 'language' in str(e.value)

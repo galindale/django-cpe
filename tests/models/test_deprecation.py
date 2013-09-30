@@ -43,19 +43,46 @@ class TestDeprecation:
     of CPE dictionary model.
     """
 
-    def test_good_deprecation(self):
+    def test_good_deprecation_min_fields(self):
         """
-        Check the creation of a correct deprecation element.
+        Check the creation of a correct deprecation element
+        with only required fields filled.
         """
 
-        # Create deprecation element in database
+        # Create deprecation element
         cpeitem = mommy.make(CpeItem)
-        date = timezone.now()
-        depre = Deprecation(date=date, cpeitem=cpeitem)
+        depre = Deprecation(cpeitem=cpeitem)
+
+        # Save element in database
         depre.save()
 
         # Load elem from database
-        depre_db = Deprecation.objects.get(date=depre.date,
+        depre_db = Deprecation.objects.get(cpeitem=depre.cpeitem)
+
+        # Compare values
+        assert depre.id == depre_db.id
+        assert depre.dep_datetime == depre_db.dep_datetime
+        assert depre.cpeitem == depre_db.cpeitem
+
+    def test_good_deprecation_all_fields(self):
+        """
+        Check the creation of a correct deprecation element
+        with all fields filled.
+        """
+
+        # Create deprecation element
+        cpeitem = mommy.make(CpeItem)
+        dt = timezone.now()
+        depre = Deprecation(dep_datetime=dt, cpeitem=cpeitem)
+
+        # Save element in database
+        depre.save()
+
+        # Load elem from database
+        depre_db = Deprecation.objects.get(dep_datetime=depre.dep_datetime,
                                            cpeitem=depre.cpeitem)
 
+        # Compare values
         assert depre.id == depre_db.id
+        assert depre.dep_datetime == depre_db.dep_datetime
+        assert depre.cpeitem == depre_db.cpeitem

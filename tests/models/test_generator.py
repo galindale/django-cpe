@@ -43,26 +43,50 @@ class TestGenerator:
     of CPE dictionary model.
     """
 
-    def test_good_gen(self):
+    def test_good_gen_min_fields(self):
         """
-        Check the creation of a correct generator element.
+        Check the creation of a correct generator element
+        with only required fields filled.
         """
-
-        # Create CPE list element in database
-        clist = mommy.make(CpeList)
 
         # Create and save generator elem in database
-        schema_version = "2.2"
-        timestamp = timezone.now()
-        gen = Generator(schema_version=schema_version,
-                        timestamp=timestamp,
-                        cpelist=clist)
-
-        gen.save()
+        gen = mommy.make(Generator)
 
         # Load elem from database
-        gen_db = Generator.objects.get(schema_version=schema_version,
-                                       timestamp=timestamp,
-                                       cpelist=clist)
+        gen_db = Generator.objects.get(product_name=gen.product_name,
+                                       product_version=gen.product_version,
+                                       schema_version=gen.schema_version,
+                                       timestamp=gen.timestamp,
+                                       cpelist=gen.cpelist)
 
         assert gen.id == gen_db.id
+        assert gen.product_name == gen_db.product_name
+        assert gen.product_version == gen_db.product_version
+        assert gen.schema_version == gen_db.schema_version
+        assert gen.timestamp == gen.timestamp
+        assert gen.cpelist == gen.cpelist
+
+    def test_good_gen_all_fields(self):
+        """
+        Check the creation of a correct generator element
+        with all fields filled.
+        """
+
+        # Create and save generator elem in database
+        gen = mommy.make(Generator,
+                         product_name="National Vulnerability Database (NVD)",
+                         product_version="2.20.0-SNAPSHOT (PRODUCTION)")
+
+        # Load elem from database
+        gen_db = Generator.objects.get(product_name=gen.product_name,
+                                       product_version=gen.product_version,
+                                       schema_version=gen.schema_version,
+                                       timestamp=gen.timestamp,
+                                       cpelist=gen.cpelist)
+
+        assert gen.id == gen_db.id
+        assert gen.product_name == gen_db.product_name
+        assert gen.product_version == gen_db.product_version
+        assert gen.schema_version == gen_db.schema_version
+        assert gen.timestamp == gen.timestamp
+        assert gen.cpelist == gen.cpelist

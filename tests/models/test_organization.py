@@ -44,54 +44,82 @@ class TestOrganization:
     of CPE dictionary model.
     """
 
-    def test_good_org(self):
+    def test_good_org_min_fields(self):
         """
-        Check the creation of a correct organization element.
+        Check the creation of a correct organization element
+        with only required fields filled.
         """
 
-        # Create values
+        # Create organization element
+        suri = "http://cpe.mitre.org"
+        name = "Mitre Corporation"
+        dt = timezone.now()
+
+        org = Organization(system_id=suri,
+                           name=name,
+                           action_datetime=dt)
+
+        # Element validation
+        org.full_clean()
+
+        # Save element in database
+        org.save()
+
+        # Load element from database
+        org_db = Organization.objects.get(system_id=org.system_id,
+                                          name=org.name,
+                                          action_datetime=org.action_datetime)
+        # Compare values
+        assert org.id == org_db.id
+        assert org.system_id == org_db.system_id
+        assert org.name == org_db.name
+        assert org.action_datetime == org_db.action_datetime
+        assert org.description == org_db.description
+
+    def test_good_org_all_fields(self):
+        """
+        Check the creation of a correct organization element
+        with all fields filled.
+        """
+
+        # Create organization element
         suri = "http://cpe.mitre.org"
         name = "Mitre Corporation"
         dt = timezone.now()
         desc = "This organization supports the CPE specification"
 
-        # Save elem in database
-        org = Organization(system_uri=suri,
+        org = Organization(system_id=suri,
                            name=name,
-                           datetime_action=dt,
+                           action_datetime=dt,
                            description=desc)
-        org.full_clean(['description'])
+
+        # Element validation
+        org.full_clean()
+
+        # Save element in database
         org.save()
 
-        # Load elem from database
-        org_db = Organization.objects.get(system_uri=suri,
-                                          name=name,
-                                          datetime_action=dt,
-                                          description=desc)
+        # Load element from database
+        org_db = Organization.objects.get(system_id=org.system_id,
+                                          name=org.name,
+                                          action_datetime=org.action_datetime,
+                                          description=org.description)
         # Compare values
-        assert suri == org_db.system_uri
-        assert name == org_db.name
-        # TODO: investigate datetime comparison
-        #assert dt == org_db.datetime_action
-        assert desc == org_db.description
+        assert org.id == org_db.id
+        assert org.system_id == org_db.system_id
+        assert org.name == org_db.name
+        assert org.action_datetime == org_db.action_datetime
+        assert org.description == org_db.description
 
-    def test_bad_org_uri_value(self):
+    def test_bad_org_systemid(self):
         """
         Check the creation of an organization with an invalid
-        system uri value.
+        system id value.
         """
 
-        org = mommy.prepare(Organization, system_uri="baduri")
+        org = mommy.prepare(Organization, system_id="baduri")
 
-        with pytest.raises(ValidationError):
-            org.full_clean(['description'])
+        with pytest.raises(ValidationError) as e:
+            org.full_clean()
 
-    def test_bad_org_uri_length(self):
-        """
-        Check the creation of an organization with an invalid
-        system uri value.
-        """
-
-        org = mommy.prepare(Organization, system_uri=("u" * 256))
-        with pytest.raises(ValidationError):
-            org.full_clean(['description'])
+        assert 'system_id' in e.value.message_dict

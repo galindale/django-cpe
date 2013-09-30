@@ -6,13 +6,14 @@ u"""py.test fixtures for django-cpe."""
 import pytest
 from django.utils import timezone
 
-from djangocpe.models import CpeData, Organization
+from djangocpe.models import CpeData, Organization, EvidenceReference
+from djangocpe.models import EVIDENCE_CURATOR_UPDATE
 
 
 @pytest.fixture
 def good_cpedata():
     """
-    Returns a valid cpe data with information about a CPE Name.
+    Returns a valid cpe data object with information about a CPE Name.
     """
 
     part = '"a"'
@@ -36,17 +37,27 @@ def good_cpedata():
 @pytest.fixture
 def good_org():
     """
-    Returns a valid organization.
+    Returns a valid organization object.
     """
 
-    # Create values
     suri = "http://cpe.mitre.org"
     name = "Mitre Corporation"
     dt = timezone.now()
     desc = "This organization supports the CPE specification"
 
-    # Save elem in database
-    return Organization(system_uri=suri,
+    return Organization(system_id=suri,
                         name=name,
-                        datetime_action=dt,
+                        action_datetime=dt,
                         description=desc)
+
+
+@pytest.fixture
+def good_evidence():
+    """
+    Return a valid evidence object.
+    """
+
+    ref = "http://evidence.mitre.org"
+    evidence = EVIDENCE_CURATOR_UPDATE
+
+    return EvidenceReference(ref=ref, evidence=evidence)
