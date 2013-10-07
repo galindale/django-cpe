@@ -29,12 +29,13 @@ feedback about it, please contact:
 """
 
 import pytest
+import os
 
-from djangocpe.cpedict_parser import CpedictParser
-from djangocpe.cpedict23_handler import Cpedict23Handler
 from djangocpe.models import Title
 
 from cpe.cpe import CPE
+
+import function_parsing
 
 
 @pytest.mark.django_db
@@ -44,18 +45,16 @@ class TestCpe23Title:
     in CPE dictionary as XML file.
     """
 
-    def _check_title(self, xmlpath, title):
+    dirpath = "{0}{1}xml{2}".format(os.path.abspath("."), os.sep, os.sep)
+
+    def _check_title(self, title):
         """
         Get the title values and check if they are saved correctly
         in database.
+        
+        :param Title title: The values of title element
+        :returns: None
         """
-
-        # Set handler
-        handler = Cpedict23Handler()
-        p = CpedictParser(handler)
-
-        # Execute parser with input XML file
-        p.parse(xmlpath)
 
         # Read title element stored in database
         title_list = Title.objects.filter(title=title.title,
@@ -71,8 +70,11 @@ class TestCpe23Title:
         Check the import of a title element.
         """
 
-        # XML CPE Dictionary path
-        XML_PATH = './xml/cpedict_v2.3_title_one.xml'
+        # The XML filepath with the CPE Dictionary
+        XML_PATH = "{0}cpedict_v2.3_title_one.xml".format(self.dirpath)
+
+        # Parse input XML file
+        function_parsing.parse_xmlfile(XML_PATH)
 
         # Generator values
         title = "1024cms.org 1024 CMS 1.4.1"
@@ -81,26 +83,29 @@ class TestCpe23Title:
         title_db = Title(title=title, language=language)
 
         # Check title element
-        self._check_title(XML_PATH, title_db)
+        self._check_title(title_db)
 
     def test_good_title_two(self):
         """
         Check the import of two title elements.
         """
 
-        # XML CPE Dictionary path
-        XML_PATH = './xml/cpedict_v2.3_title_two.xml'
+        # The XML filepath with the CPE Dictionary
+        XML_PATH = "{0}cpedict_v2.3_title_two.xml".format(self.dirpath)
+ 
+        # Parse input XML file
+        function_parsing.parse_xmlfile(XML_PATH)
 
         # Check first title element
         title1 = "Elemata CMS 3.0 release candidate"
         language1 = "en-US"
         title1_db = Title(title=title1, language=language1)
 
-        self._check_title(XML_PATH, title1_db)
+        self._check_title(title1_db)
 
         # Check second title element
         title2 = u"Elemata CMS 3.0 version candidata"
         language2 = "es-es"
         title2_db = Title(title=title2, language=language2)
 
-        self._check_title(XML_PATH, title2_db)
+        self._check_title(title2_db)

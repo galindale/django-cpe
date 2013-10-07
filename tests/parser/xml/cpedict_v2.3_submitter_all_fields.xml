@@ -10,26 +10,15 @@
   <cpe-item deprecation_date="2008-04-15T16:35:00.000Z" deprecated="true" name="cpe:/a:microsoft:exchange_srv:2000">
     <title xml:lang="en-US">Microsoft exchange_srv 2000</title>
     <cpe-23:cpe23-item name="cpe:2.3:a:microsoft:exchange_srv:2000:*:*:*:*:*:*:*">
-      <cpe-23:provenance-record date="2008-04-15T12:35:00.000-04:00">
-        <cpe-23:submitter system-id="http://www.i4s.com" name="I4S" date="2005-01-15T17:35:00.000-04:00"/>
-				<cpe-23:authority system-id="http://www.nist.gov/‎" name="NIST" date="2005-01-11T16:03:00.000-04:00">
-				  <cpe-23:description>
-					  Organization acting as the first authority
+      <cpe-23:provenance-record>
+        <cpe-23:submitter system-id="http://http://www.mitre.org/" name="MITRE" date="2005-01-15T17:35:00.000-04:00">
+					<cpe-23:description>
+					  Organization acting as the submitter
 					</cpe-23:description>
-				</cpe-23:authority>
-				<cpe-23:authority system-id="http://www.mitre.org/" name="Mitre" date="2005-01-10T16:03:00.000-04:00">
-				  <cpe-23:description>
-					  Organization acting as the auxiliary authority
-					</cpe-23:description>
-				</cpe-23:authority>
-        <cpe-23:change-description change-type="ORIGINAL_RECORD" date="2008-03-15T12:35:00.000-04:00">
-				  <cpe-23:evidence-reference evidence="CURATOR_UPDATE"/>
-					<cpe-23:comments>
-					  The curator of the dictionary discovered information that led to a change.
-					</cpe-23:comments>
-				</cpe-23:change-description>
-        <cpe-23:change-description change-type="AUTHORITY_CHANGE" date="2008-04-03T12:35:00.000-04:00"/>
-      </cpe-23:provenance-record>		
+				</cpe-23:submitter>
+				<cpe-23:authority system-id="http://www.nist.gov/‎" name="NIST" date="2005-01-11T16:03:00.000-04:00"/>
+        <cpe-23:change-description change-type="DEPRECATION" date="2012-08-11T09:20:00.000-04:00"/>
+      </cpe-23:provenance-record>
     </cpe-23:cpe23-item>
   </cpe-item>
 </cpe-list>

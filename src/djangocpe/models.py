@@ -61,7 +61,7 @@ def get_change_type_int(value):
     """
 
     for k, v in CHANGE_TYPE_CHOICES:
-        if v.uuper().replace(" ", "_") == value:
+        if v.upper().replace(" ", "_") == value:
             return k
 
     # Type not found
@@ -168,7 +168,7 @@ def get_deprecatedby_type_int(value):
             return k
 
     # Type not found
-    errormsg = "Invalid deprecated-by type: {0}".format(value)
+    eRRORmsg = "Invalid deprecated-by type: {0}".format(value)
     raise ValueError(errormsg)
 
 # ################################
@@ -609,7 +609,7 @@ class Deprecation(models.Model):
         except:
             name = "SIN ASIGNAR CPE"
         finally:
-            return u'{0} ({1})'.format(name, self.dep_datetime)
+            return u'{0} ({1})'.format(self.cpeitem.name, self.dep_datetime)
 
 
 class DeprecatedBy(models.Model):
@@ -652,7 +652,7 @@ class ProvenanceRecord(models.Model):
         Organization, null=False, related_name='submitter',
         help_text=u'The organization responsible for submitting \
             the identifier name')
-    authority = models.ManyToManyField(
+    authorities = models.ManyToManyField(
         Organization, null=False, related_name='authority',
         help_text=u'The authority or authorities responsible for \
             endorsing the identifier name')
@@ -666,7 +666,7 @@ class ProvenanceRecord(models.Model):
         :rtype: string
         """
 
-        return u'{0} ({1})'.format(self.cpeitem.cpename, self.submitter)
+        return u'{0} ({1})'.format(self.cpeitem.name, self.submitter)
 
 
 class EvidenceReference(models.Model):
@@ -721,4 +721,4 @@ class ChangeDescription(models.Model):
         """
 
         change_type_text = CHANGE_TYPE_CHOICES[self.change_type][1]
-        return u'{0} - {1}'.format(self.datetime, change_type_text)
+        return u'{0} - {1}'.format(self.change_datetime, change_type_text)

@@ -29,12 +29,13 @@ feedback about it, please contact:
 """
 
 import pytest
+import os
 
-from djangocpe.cpedict_parser import CpedictParser
-from djangocpe.cpedict23_handler import Cpedict23Handler
 from djangocpe.models import Note
 
 from cpe.cpe import CPE
+
+import function_parsing
 
 
 @pytest.mark.django_db
@@ -44,62 +45,104 @@ class TestCpe23Note:
     in CPE dictionary as XML file.
     """
 
-    def _check_note(self, xmlpath, note):
+    dirpath = "{0}{1}xml{2}".format(os.path.abspath("."), os.sep, os.sep)
+
+    def _check_note(self, notes):
         """
         Get the note values and check if they are saved correctly
         in database.
+
+        :param Note note: The values of note element
+        :returns: None
         """
 
-        # Set handler
-        handler = Cpedict23Handler()
-        p = CpedictParser(handler)
+        for n in notes:
 
-        # Execute parser with input XML file
-        p.parse(xmlpath)
+            # Read note element stored in database
+            note_list = Note.objects.filter(note=n.note, language=n.language)
+            note_db = note_list[0]
 
-        # Read note element stored in database
-        note_list = Note.objects.filter(language=note.language)
-        note_db = note_list[0]
+            # Check if test note element is stored in database
+            assert note_db.note == n.note
+            assert note_db.language == n.language
 
-        # Check if test note element is stored in database
-        assert note_db.note == note.note
-        assert note_db.language == note.language
-
-    def test_good_note_one(self):
+    def test_good_notes_one(self):
         """
-        Check the import of a note element.
+        Check the import of a notes element.
         """
 
-        # XML CPE Dictionary path
-        XML_PATH = './xml/cpedict_v2.3_note_one.xml'
+        # The XML filepath with the CPE Dictionary
+        XML_PATH = "{0}cpedict_v2.3_notes_one.xml".format(self.dirpath)
+
+        # Parse input XML file
+        function_parsing.parse_xmlfile(XML_PATH)
+
+        noteList = []
 
         # Generator values
         note = "Use product number and detail plain name"
         language = "en-US"
 
         note_db = Note(note=note, language=language)
+        noteList.append(note_db)
 
         # Check note element
-        self._check_note(XML_PATH, note_db)
+        self._check_note(noteList)
 
-    def test_good_note_two(self):
+    def test_good_notes_two(self):
         """
-        Check the import of two note elements.
+        Check the import of two notes elements.
         """
 
-        # XML CPE Dictionary path
-        XML_PATH = './xml/cpedict_v2.3_note_two.xml'
+        # The XML filepath with the CPE Dictionary
+        XML_PATH = "{0}cpedict_v2.3_notes_two.xml".format(self.dirpath)
 
-        # Check first note element
+        # Parse input XML file
+        function_parsing.parse_xmlfile(XML_PATH)
+
+        noteList = []
+
+        # First note element
         note1 = "Use product number and detail plain name"
         language1 = "en-US"
         note1_db = Note(note=note1, language=language1)
 
-        self._check_note(XML_PATH, note1_db)
+        noteList.append(note1_db)
 
-        # Check second note element
+        # Second note element
         note2 = u"Usa el numero de producto y el nombre detallado"
         language2 = "es-ES"
         note2_db = Note(note=note2, language=language2)
 
-        self._check_note(XML_PATH, note2_db)
+        noteList.append(note2_db)
+
+        # Check note element
+        self._check_note(noteList)
+
+    def test_good_notes_one_two(self):
+        """
+        Check the import of one notes element with two note subelements.
+        """
+
+        # The XML filepath with the CPE Dictionary
+        XML_PATH = "{0}cpedict_v2.3_notes_one_two.xml".format(self.dirpath)
+
+        # Parse input XML file
+        function_parsing.parse_xmlfile(XML_PATH)
+
+        language = "en-US"
+        noteList = []
+
+        # Check first note element
+        note1 = "Use product number and detail plain name"
+        note1_db = Note(note=note1, language=language)
+
+        noteList.append(note1_db)
+
+        # Check second note element
+        note2 = "Another note about cpe name"
+        note2_db = Note(note=note2, language=language)
+
+        noteList.append(note2_db)
+
+        self._check_note(noteList)

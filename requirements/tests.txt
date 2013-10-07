@@ -10,3 +10,4 @@ model-mommy==1.0
 pytest==2.3.5
 pytest-cov==1.6
 pytest-django==2.3.0
+South==0.8.2

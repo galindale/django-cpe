@@ -4,7 +4,7 @@
 This file is part of django-cpe package.
 
 This module contains the tests to check import operation with the parser
-associated with cpeitem elements in a CPE Dictionary version 2.3 as XML file.
+associated with cpe-item elements in a CPE Dictionary version 2.3 as XML file.
 
 Copyright (C) 2013  Alejandro Galindo García, Roberto Abdelkader Martínez Pérez
 
@@ -29,81 +29,92 @@ feedback about it, please contact:
 """
 
 import pytest
+import os
 
 from iso8601 import iso8601
 
-from djangocpe.cpedict_parser import CpedictParser
-from djangocpe.cpedict23_handler import Cpedict23Handler
 from djangocpe.models import CpeItem
+
+import function_parsing
 
 
 @pytest.mark.django_db
 class TestCpe23CpeItem:
     """
-    Tests to check import operation with a cpeitem element
+    Tests to check import operation with a cpe-item element
     in CPE dictionary as XML file.
     """
 
-    def _check_cpeitem(self, xmlpath, deprecated, depdate):
+    dirpath = "{0}{1}xml{2}".format(os.path.abspath("."), os.sep, os.sep)
+
+    def _check_cpeitem(self, cpeitem):
         """
-        Get the cpeitem values and check if they are saved correctly
+        Get the cpe-item values and check if they are saved correctly
         in database.
+
+        :param CpeItem cpeitem: The values of cpe-item element
+        :returns: None
         """
 
-        # Search cpeitem elements in database and save their IDs
-        cpeitem_list_prev = CpeItem.objects.filter(deprecated=deprecated,
-                                                   deprecation_date=depdate)
-        id_list_prev = cpeitem_list_prev.values_list('id')
+        # Read cpe-item element stored in database
+        cpeitem_list = CpeItem.objects.filter(
+            deprecated=cpeitem.deprecated,
+            deprecation_date=cpeitem.deprecation_date)
 
-        cpeitem_ids_prev = []
-        for id in id_list_prev:
-            cpeitem_ids_prev.append(id[0])
+        cpeitem_db = cpeitem_list[0]
 
-        # Set handler
-        handler = Cpedict23Handler()
-        p = CpedictParser(handler)
+        # Check if test cpe-item element is stored in database
+        assert cpeitem_db.deprecated == cpeitem.deprecated
 
-        # Execute parser with input XML file
-        p.parse(xmlpath)
+        if cpeitem.deprecation_date is None:
+            assert cpeitem_db.deprecation_date == cpeitem.deprecation_date
+        else:
+            # Convert datetime string in ISO 8601 datetime value
+            isodate = iso8601.parse_date(cpeitem.deprecation_date)
 
-        # Read cpeitem element stored in database
-        cpeitem_list_post = CpeItem.objects.filter(deprecated=deprecated,
-                                                   deprecation_date=depdate)
-        id_list_post = cpeitem_list_post.values_list('id')
-
-        cpeitem_ids_post = []
-        for id in id_list_post:
-            cpeitem_ids_post.append(id[0])
-
-        # Check if test cpeitem element is stored in database
-        assert len(cpeitem_ids_post) == (len(cpeitem_ids_prev) + 1)
+            assert cpeitem_db.deprecation_date == isodate
 
     def test_good_cpeitem_min_fields(self):
         """
-        Check the import of a minimum cpeitem element (only required fields).
+        Check the import of a minimum cpe-item element (only required fields).
         """
 
-        # XML CPE Dictionary path
-        XML_PATH = './xml/cpedict_v2.3_cpeitem_min_fields.xml'
+        # The XML filepath with the CPE Dictionary
+        XML_PATH = "{0}cpedict_v2.3_cpeitem_min_fields.xml".format(
+            self.dirpath)
 
-        # CpeItem values
+        # Parse input XML file
+        function_parsing.parse_xmlfile(XML_PATH)
+
+        # Cpe-item values
         deprecated = False
         depdate = None
 
-        # Check cpeitem element
-        self._check_cpeitem(XML_PATH, deprecated, depdate)
+        cpeitem_db = CpeItem(deprecated=deprecated, deprecation_date=depdate)
+
+        # Check cpe-item element
+        self._check_cpeitem(cpeitem_db)
 
     def test_good_cpeitem_all_fields(self):
         """
-        Check the import of a cpeitem element with all fields filled.
+        Check the import of a cpe-item element with all fields filled.
         """
 
-        # XML CPE Dictionary path
-        XML_PATH = './xml/cpedict_v2.3_cpeitem_all_fields.xml'
+        # The XML filepath with the CPE Dictionary
+        XML_PATH = "{0}cpedict_v2.3_cpeitem_all_fields.xml".format(
+            self.dirpath)
+
+        # Parse input XML file
+        function_parsing.parse_xmlfile(XML_PATH)
 
         # Generator values
         deprecated = True
-        depdate = iso8601.parse_date("2010-12-28T17:36:01.163Z")
+        depdate = "2010-12-28T17:36:01.163Z"
 
-        # Check generator element
-        self._check_cpeitem(XML_PATH, deprecated, depdate)
+        # Check valid datetime value
+        iso8601.parse_date(depdate)
+
+        cpeitem_db = CpeItem(deprecated=deprecated, deprecation_date=depdate)
+
+        # Check cpe-item element
+        self._check_cpeitem(cpeitem_db)

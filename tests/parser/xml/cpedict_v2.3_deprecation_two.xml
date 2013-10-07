@@ -10,12 +10,12 @@
   <cpe-item deprecation_date="2008-04-15T16:35:00.000Z" deprecated="true" name="cpe:/a:microsoft:exchange_srv:2000">
     <title xml:lang="en-US">Microsoft exchange_srv 2000</title>
     <cpe-23:cpe23-item name="cpe:2.3:a:microsoft:exchange_srv:2000:*:*:*:*:*:*:*">
-      <cpe-23:deprecation date="2008-04-15T12:35:00.000-04:00">
-        <cpe-23:deprecated-by type="NAME_CORRECTION" name="cpe:2.3:a:microsoft:exchange_server:2000:*:*:*:*:*:*:*"/>
+      <cpe-23:deprecation>
+        <cpe-23:deprecated-by type="NAME_CORRECTION" name="cpe:2.3:h:microsoft:exchange_server:2000:*:*:*:*:*:*:*"/>
       </cpe-23:deprecation>
-      <cpe-23:deprecation date="2008-05-15T12:35:00.000-04:00">
-        <cpe-23:deprecated-by type="NAME_CORRECTION" name="cpe:2.3:a:microsoft:exchange_server:2000:sp2:*:*:*:*:*:*"/>
-        <cpe-23:deprecated-by type="NAME_CORRECTION" name="cpe:2.3:a:microsoft:exchange_server:2000:sp2:*:*:*:*:*:*"/>
+      <cpe-23:deprecation date="2009-05-15T12:35:00.000-04:00">
+        <cpe-23:deprecated-by type="NAME_REMOVAL" name="cpe:2.3:a:microsoft:exchange_server:2004:sp2:*:*:*:*:*:*"/>
+        <cpe-23:deprecated-by type="NAME_CORRECTION" name="cpe:2.3:a:microsoft:exchange_server:2015:sp2:*:*:*:*:*:*"/>
       </cpe-23:deprecation>
     </cpe-23:cpe23-item>
   </cpe-item>

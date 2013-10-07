@@ -18,3 +18,4 @@ modern-package-template==1.0
 pastescript==1.7.5
 pep8==1.4.6
 Sphinx==1.2b1
+South==0.8.2
