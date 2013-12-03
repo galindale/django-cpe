@@ -16,17 +16,17 @@ def good_cpedata():
     Returns a valid cpe data object with information about a CPE Name.
     """
 
-    part = '"a"'
-    vendor = '"microsoft"'
-    product = '"internet_explorer"'
-    version = '"10\.0"'
-    update = '"alpha"'
-    edition = 'ANY'
-    sw_edition = 'NA'
-    target_sw = 'ANY'
-    target_hw = '"x64"'
-    other = 'NA'
-    language = '"es\-es"'
+    part = u'"a"'
+    vendor = u'"microsoft"'
+    product = u'"internet_explorer"'
+    version = u'"10\.0"'
+    update = u'"alpha"'
+    edition = u'ANY'
+    sw_edition = u'NA'
+    target_sw = u'ANY'
+    target_hw = u'"x64"'
+    other = u'NA'
+    language = u'"es\-es"'
 
     return CpeData(part=part, vendor=vendor, product=product,
                    version=version, update=update, edition=edition,
@@ -37,23 +37,32 @@ def good_cpedata():
 def create_cpedata(num):
     """
     Create the input count of cpe data in database.
+
+    :param int num: The amount of cpedata elements to create
+    :returns: The cpedata list created
+    :rtype: list
     """
 
-    part = '"a"'
-    vendor = '"microsoft"'
-    product = '"internet_explorer"'
-    update = '"alpha"'
-    edition = 'ANY'
-    sw_edition = 'NA'
-    target_sw = 'ANY'
-    target_hw = '"x64"'
-    other = 'NA'
-    language = '"es\-es"'
+    part = u'"a"'
+    vendor = u'"microsoft"'
+    product = u'"internet_explorer"'
+    update = u'"alpha"'
+    edition = u'ANY'
+    sw_edition = u'NA'
+    target_sw = u'ANY'
+    target_hw = u'"x64"'
+    other = u'NA'
+    language = u'"es\-es"'
 
-    for i in range(0,num):
+    cpedata_list = []
+
+    for i in range(0, num):
         version = '"{0}\.0"'.format(i)
         cpedata = CpeData(part=part, vendor=vendor, product=product,
                           version=version, update=update, edition=edition,
                           sw_edition=sw_edition, target_sw=target_sw,
                           target_hw=target_hw, other=other, language=language)
         cpedata.save()
+        cpedata_list.append(cpedata)
+
+    return cpedata_list

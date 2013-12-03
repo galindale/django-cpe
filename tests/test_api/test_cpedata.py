@@ -13,13 +13,14 @@ import unittest
 from model_mommy import mommy
 from djangocpe.models import CpeData
 from django.conf import settings
-from fixtures import good_cpedata
+from fixtures import good_cpedata, create_cpedata
 
 
+@pytest.mark.api
 class TestCpeDataApi(unittest.TestCase):
 
     #: Base host where the API endpoint is exposed
-    BASE_HOST = u'http://20.1.40.228'
+    BASE_HOST = u'http://127.0.0.1'
 
     #: Base port where the API endpoint is exposed
     BASE_PORT = u'8000'
@@ -54,10 +55,10 @@ class TestCpeDataApi(unittest.TestCase):
     KEY_METHOD_HEAD = u"HEAD"
 
     #: Dictionary key associated with JSON POST method
-    KEY_METHOD_OPTIONS = u"POST"
+    KEY_METHOD_POST = u"POST"
 
     #: Dictionary key associated with JSON OPTIONS method
-    KEY_METHOD_POST = u"OPTIONS"
+    KEY_METHOD_OPTIONS = u"OPTIONS"
 
     #: Dictionary key associated with JSON PUT method
     KEY_METHOD_PUT = u"PUT"
@@ -118,7 +119,6 @@ class TestCpeDataApi(unittest.TestCase):
 
         return None
 
-    @pytest.mark.api
     def test_cpedata_list_options(self):
         """
         Checks the cpe data list OPTIONS method in the API,
@@ -152,7 +152,7 @@ class TestCpeDataApi(unittest.TestCase):
         # Let's verify that we have a list of fields for POST
         assert options[self.KEY_ACTIONS].get(self.KEY_METHOD_POST) is not None
 
-    @pytest.mark.api
+    @pytest.mark.django_db
     def test_cpedata_list_with_default_limit(self):
         """
         Checks the listing of cpe data via api using
@@ -161,9 +161,10 @@ class TestCpeDataApi(unittest.TestCase):
 
         # Generate 20 mommys to test
         cpedata_list = create_cpedata(20)
+        print CpeData.objects.all()
 
         # Retrieve cpe data from API
-        endpoint = '{host}:{port}{api_url}'.format(
+        endpoint = u'{host}:{port}{api_url}'.format(
             host=self.BASE_HOST,
             port=self.BASE_PORT,
             api_url=self.BASE_API_URL)
@@ -173,9 +174,13 @@ class TestCpeDataApi(unittest.TestCase):
 
         # Check HTTP Status Code is OK (200)
         assert list_request.status_code == requests.codes.ok
+        print list_request.content
 
         data = list_request.json()
+        print data
+        print "\n"
         results = data.get(self.KEY_RESULTS)
+        print results
 
         # Check that JSON contains main data block (results)
         assert results is not None
@@ -187,12 +192,13 @@ class TestCpeDataApi(unittest.TestCase):
         db_objects = CpeData.objects.all()
 
         # Check that total count in API equals total count in model
-        assert data[self.KEY_COUNT] == len(cpedata_list)
+        print data
+        assert data[self.KEY_COUNT] == len(db_objects)
 
-        for cpe in cpedata_list:
+        for cpe in db_objects:
             cpe.delete()
 
-    @pytest.mark.api
+    @pytest.mark.django_db
     def test_cpedata_list_with_more_than_one_page(self):
         """
         Checks the listing of controls via api
@@ -262,7 +268,7 @@ class TestCpeDataApi(unittest.TestCase):
         for cpe in cpedata_list:
             cpe.delete()
 
-    @pytest.mark.api
+    @pytest.mark.django_db            
     def test_cpedata_list_post_new_good_min_fields(self):
         """
         Checks the creation of a new cpe data
@@ -313,7 +319,6 @@ class TestCpeDataApi(unittest.TestCase):
         # Delete created control
         CpeData.objects.get(id=json_created[self.KEY_ATT_ID]).delete()
 
-    @pytest.mark.api
     def test_cpedata_list_post_new_bad_required_fields(self):
         """
         Checks the error during creation of a new control
@@ -340,7 +345,7 @@ class TestCpeDataApi(unittest.TestCase):
         # Check if the error list has errors for incomplete fields
         assert error_list.get(self.KEY_ATT_PART) is not None
 
-    @pytest.mark.api
+    @pytest.mark.django_db
     def test_cpedata_details_options(self):
         """
         Checks the cpe data details OPTIONS method
@@ -376,7 +381,7 @@ class TestCpeDataApi(unittest.TestCase):
 
         cpedata.delete()
 
-    @pytest.mark.api
+    @pytest.mark.django_db        
     def test_cpedata_details_get_object(self):
         """
         Checks the controls details GET method
@@ -417,7 +422,7 @@ class TestCpeDataApi(unittest.TestCase):
 
         cpedata.delete()
 
-    @pytest.mark.api
+    @pytest.mark.django_db
     def test_cpedata_details_put_object_good_fields(self):
         """
         Edits a cpe data with all fields ok.
@@ -464,7 +469,7 @@ class TestCpeDataApi(unittest.TestCase):
 
         cpedata_db.delete()
 
-    @pytest.mark.api
+    @pytest.mark.django_db
     def test_cpedata_details_put_object_bad_required_fields(self):
         """
         Edits a cpe data and tries to save
@@ -506,7 +511,7 @@ class TestCpeDataApi(unittest.TestCase):
 
         cpedata.delete()
 
-    @pytest.mark.api
+    @pytest.mark.django_db
     def test_cpedata_details_patch_object_good_fields(self):
         """
         Partially edits a cpe data with all fields ok.
@@ -541,7 +546,7 @@ class TestCpeDataApi(unittest.TestCase):
 
         cpedata.delete()
 
-    @pytest.mark.api
+    @pytest.mark.django_db
     def test_cpedata_details_patch_object_bad_required_fields(self):
         """
         Partially edits a cpe data missing some fields.
@@ -575,7 +580,7 @@ class TestCpeDataApi(unittest.TestCase):
 
         cpedata.delete()
 
-    @pytest.mark.api
+    @pytest.mark.django_db
     def test_cpedata_details_delete_object_good_exist(self):
         """
         Deletes an existent cpe data in database.
@@ -598,7 +603,7 @@ class TestCpeDataApi(unittest.TestCase):
         # Check HTTP Status Code is No Content (204)
         assert delete_request.status_code == requests.codes.no_content
 
-    @pytest.mark.api
+    @pytest.mark.django_db
     def test_cpedata_details_delete_object_bad_dont_exist(self):
         """
         Tries to delete an inexistent cpe data in database.
