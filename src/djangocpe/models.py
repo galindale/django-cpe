@@ -182,37 +182,38 @@ class CpeData(models.Model):
     """
 
     #: The system type of CPE Name
-    part = models.CharField(max_length=255, null=True, blank=True)
+    part = models.CharField(max_length=10, null=True, blank=True)
     #: The vendor name of CPE Name
-    vendor = models.CharField(max_length=255, null=True, blank=True)
+    vendor = models.CharField(max_length=100, null=True, blank=True)
     #: The product name of CPE Name
-    product = models.CharField(max_length=255, null=True, blank=True)
+    product = models.CharField(max_length=100, null=True, blank=True)
     #: The version of product of CPE Name
-    version = models.CharField(max_length=255, null=True, blank=True)
+    version = models.CharField(max_length=50, null=True, blank=True)
     #: The update or service pack information of CPE Name
-    update = models.CharField(max_length=255, null=True, blank=True)
+    update = models.CharField(max_length=100, null=True, blank=True)
     #: The edition of product of CPE Name
-    edition = models.CharField(max_length=255, null=True, blank=True)
+    edition = models.CharField(max_length=100, null=True, blank=True)
     #: The software edition of CPE Name
-    sw_edition = models.CharField(max_length=255, null=True, blank=True)
+    sw_edition = models.CharField(max_length=100, null=True, blank=True)
     #: The software computing environment of CPE Name within
     #: which the product operates
-    target_sw = models.CharField(max_length=255, null=True, blank=True)
+    target_sw = models.CharField(max_length=100, null=True, blank=True)
     #: The arquitecture of CPE Name
-    target_hw = models.CharField(max_length=255, null=True, blank=True)
+    target_hw = models.CharField(max_length=100, null=True, blank=True)
     #: The extra information about CPE Name
-    other = models.CharField(max_length=255, null=True, blank=True)
+    other = models.CharField(max_length=150, null=True, blank=True)
     #: The internationalization information of CPE Name
-    language = models.CharField(max_length=255, null=True, blank=True)
+    language = models.CharField(max_length=50, null=True, blank=True)
 
     class Meta:
         unique_together = (("part", "vendor", "product", "version", "update",
                             "edition", "sw_edition", "target_sw", "target_hw",
                             "other", "language"),)
 
-        index_together = [["part", "vendor", "product", "version", "update",
-                           "edition", "sw_edition", "target_sw", "target_hw",
-                           "other", "language"], ]
+         # Only >= django 1.5
+#        index_together = [["part", "vendor", "product", "version", "update",
+#                           "edition", "sw_edition", "target_sw", "target_hw",
+#                           "other", "language"], ]
 
     def clean(self):
         """

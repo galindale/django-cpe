@@ -1,7 +1,21 @@
 News
 ====
 
+This file contain the complete list of features provided by the package django-cpe.
+
+
+0.0.0a
+--------------
+
+*Release date: UNRELEASED*
+
+* 
+
+
 0.0.0
 -----
 
- * Starting development.
+*Release date: UNRELEASED*
+
+* Starting development.
+
