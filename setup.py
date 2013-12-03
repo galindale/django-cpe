@@ -14,6 +14,7 @@ EMAILS = 'galindo.garcia.alejandro@gmail.com, robertomartinezp@gmail.com'
 
 install_requires = [
     'cpe',
+    'djangorestframework==2.3.9',
 ]
 
 

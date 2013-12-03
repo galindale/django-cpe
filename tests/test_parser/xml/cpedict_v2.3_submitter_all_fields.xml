@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<cpe-list xmlns:meta="http://scap.nist.gov/schema/cpe-dictionary-metadata/0.2"
+          xmlns:scap-core="http://scap.nist.gov/schema/scap-core/0.3"
+					xmlns:config="http://scap.nist.gov/schema/configuration/0.1"
+					xmlns:cpe-23="http://scap.nist.gov/schema/cpe-extension/2.3"
+					xmlns="http://cpe.mitre.org/dictionary/2.0"
+					xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+					xmlns:ns6="http://scap.nist.gov/schema/scap-core/0.1"
+					xsi:schemaLocation="http://scap.nist.gov/schema/configuration/0.1 http://nvd.nist.gov/schema/configuration_0.1.xsd http://cpe.mitre.org/dictionary/2.0 http://scap.nist.gov/schema/cpe/2.3/cpe-dictionary_2.3.xsd http://scap.nist.gov/schema/scap-core/0.3 http://nvd.nist.gov/schema/scap-core_0.3.xsd http://scap.nist.gov/schema/scap-core/0.1 http://nvd.nist.gov/schema/scap-core_0.1.xsd http://scap.nist.gov/schema/cpe-dictionary-metadata/0.2 http://nvd.nist.gov/schema/cpe-dictionary-metadata_0.2.xsd http://scap.nist.gov/schema/cpe-extension/2.3 http://scap.nist.gov/schema/cpe/2.3/cpe-dictionary-extension_2.3.xsd">
+  <cpe-item deprecation_date="2008-04-15T16:35:00.000Z" deprecated="true" name="cpe:/a:microsoft:exchange_srv:2000">
+    <title xml:lang="en-US">Microsoft exchange_srv 2000</title>
+    <cpe-23:cpe23-item name="cpe:2.3:a:microsoft:exchange_srv:2000:*:*:*:*:*:*:*">
+      <cpe-23:provenance-record>
+        <cpe-23:submitter system-id="http://http://www.mitre.org/" name="MITRE" date="2005-01-15T17:35:00.000-04:00">
+					<cpe-23:description>
+					  Organization acting as the submitter
+					</cpe-23:description>
+				</cpe-23:submitter>
+				<cpe-23:authority system-id="http://www.nist.gov/‎" name="NIST" date="2005-01-11T16:03:00.000-04:00"/>
+        <cpe-23:change-description change-type="DEPRECATION" date="2012-08-11T09:20:00.000-04:00"/>
+      </cpe-23:provenance-record>
+    </cpe-23:cpe23-item>
+  </cpe-item>
+</cpe-list>
