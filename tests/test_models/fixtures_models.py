@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
 u"""py.test fixtures for django-cpe."""
@@ -33,36 +32,31 @@ def good_cpedata():
                    sw_edition=sw_edition, target_sw=target_sw,
                    target_hw=target_hw, other=other, language=language)
 
+
 @pytest.fixture
-def create_cpedata(num):
+def good_org():
     """
-    Create the input count of cpe data in database.
-
-    :param int num: The amount of cpedata elements to create
-    :returns: The cpedata list created
-    :rtype: list
+    Returns a valid organization object.
     """
 
-    part = u'"a"'
-    vendor = u'"microsoft"'
-    product = u'"internet_explorer"'
-    update = u'"alpha"'
-    edition = u'ANY'
-    sw_edition = u'NA'
-    target_sw = u'ANY'
-    target_hw = u'"x64"'
-    other = u'NA'
-    language = u'"es\-es"'
+    suri = u"http://cpe.mitre.org"
+    name = u"Mitre Corporation"
+    dt = timezone.now()
+    desc = u"This organization supports the CPE specification"
 
-    cpedata_list = []
+    return Organization(system_id=suri,
+                        name=name,
+                        action_datetime=dt,
+                        description=desc)
 
-    for i in range(0, num):
-        version = '"{0}\.0"'.format(i)
-        cpedata = CpeData(part=part, vendor=vendor, product=product,
-                          version=version, update=update, edition=edition,
-                          sw_edition=sw_edition, target_sw=target_sw,
-                          target_hw=target_hw, other=other, language=language)
-        cpedata.save()
-        cpedata_list.append(cpedata)
 
-    return cpedata_list
+@pytest.fixture
+def good_evidence():
+    """
+    Return a valid evidence object.
+    """
+
+    ref = u"http://evidence.mitre.org"
+    evidence = EVIDENCE_CURATOR_UPDATE
+
+    return EvidenceReference(ref=ref, evidence=evidence)

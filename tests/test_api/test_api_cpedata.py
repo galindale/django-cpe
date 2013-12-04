@@ -10,17 +10,17 @@ import pytest
 import requests
 import json
 import unittest
-from model_mommy import mommy
+
 from djangocpe.models import CpeData
 from django.conf import settings
-from fixtures import good_cpedata, create_cpedata
+from fixtures_api import good_cpedata, create_cpedata
 
 
 @pytest.mark.api
 class TestCpeDataApi(unittest.TestCase):
 
     #: Base host where the API endpoint is exposed
-    BASE_HOST = u'http://127.0.0.1'
+    BASE_HOST = u'http://20.1.40.228'
 
     #: Base port where the API endpoint is exposed
     BASE_PORT = u'8000'
@@ -101,19 +101,21 @@ class TestCpeDataApi(unittest.TestCase):
     #: Dictionary key associated with model field language
     KEY_ATT_LANGUAGE = u"language"
 
-    # def __init__(self):
-        # """
-        # Read the initial data of test.
-        # """
+    def __init__(self, *args, **kwargs):
+        """
+        Read the initial data of test.
+        """
 
-        # self.endpoint = '{host}:{port}{api_url}'.format(
-            # host=self.BASE_HOST,
-            # port=self.BASE_PORT,
-            # api_url=self.BASE_API_URL)
+        super(TestCpeDataApi, self).__init__(*args, **kwargs)
+
+        self.endpoint = '{host}:{port}{api_url}'.format(
+            host=self.BASE_HOST,
+            port=self.BASE_PORT,
+            api_url=self.BASE_API_URL)
 
     def shortDescription(self):
         """
-        Overrides the doctring output in nosetest,
+        Overrides the docstring output in nosetest,
         showing the method's name instead
         """
 
@@ -126,13 +128,8 @@ class TestCpeDataApi(unittest.TestCase):
         """
 
         # Retrieve OPTIONS from API
-        endpoint = '{host}:{port}{api_url}'.format(
-            host=self.BASE_HOST,
-            port=self.BASE_PORT,
-            api_url=self.BASE_API_URL)
-
         options_request = requests.options(
-            endpoint, headers=self.JSON_HEADER)
+            self.endpoint, headers=self.JSON_HEADER)
 
         # Check HTTP Status Code is OK (200)
         assert options_request.status_code == requests.codes.ok
@@ -160,27 +157,17 @@ class TestCpeDataApi(unittest.TestCase):
         """
 
         # Generate 20 mommys to test
-        cpedata_list = create_cpedata(20)
-        print CpeData.objects.all()
+        create_cpedata(20, u"test1")
 
         # Retrieve cpe data from API
-        endpoint = u'{host}:{port}{api_url}'.format(
-            host=self.BASE_HOST,
-            port=self.BASE_PORT,
-            api_url=self.BASE_API_URL)
-
         list_request = requests.get(
-            endpoint, headers=self.JSON_HEADER)
+            self.endpoint, headers=self.JSON_HEADER)
 
         # Check HTTP Status Code is OK (200)
         assert list_request.status_code == requests.codes.ok
-        print list_request.content
 
         data = list_request.json()
-        print data
-        print "\n"
         results = data.get(self.KEY_RESULTS)
-        print results
 
         # Check that JSON contains main data block (results)
         assert results is not None
@@ -192,7 +179,6 @@ class TestCpeDataApi(unittest.TestCase):
         db_objects = CpeData.objects.all()
 
         # Check that total count in API equals total count in model
-        print data
         assert data[self.KEY_COUNT] == len(db_objects)
 
         for cpe in db_objects:
@@ -207,16 +193,12 @@ class TestCpeDataApi(unittest.TestCase):
         """
 
         # Generate 20 mommys to test
-        cpedata_list = create_cpedata(20)
+        cpedata_list = create_cpedata(20, u"test2")
 
         # Retrieve controls from API
-        endpoint = u'{host}:{port}{api_url}'.format(
-            host=self.BASE_HOST,
-            port=self.BASE_PORT,
-            api_url=self.BASE_API_URL)
         params = {u'limit': 10}  # Limit should be less than quantity of mommys
         list_request = requests.get(
-            endpoint, headers=self.JSON_HEADER, params=params)
+            self.endpoint, headers=self.JSON_HEADER, params=params)
 
         # Check HTTP Status Code is OK (200)
         assert list_request.status_code == requests.codes.ok
@@ -268,7 +250,7 @@ class TestCpeDataApi(unittest.TestCase):
         for cpe in cpedata_list:
             cpe.delete()
 
-    @pytest.mark.django_db            
+    @pytest.mark.django_db
     def test_cpedata_list_post_new_good_min_fields(self):
         """
         Checks the creation of a new cpe data
@@ -278,7 +260,7 @@ class TestCpeDataApi(unittest.TestCase):
         json_cpedata = {self.KEY_ATT_PART: u'"a"',
                         self.KEY_ATT_VENDOR: u'"microsoft"',
                         self.KEY_ATT_PRODUCT: u'"internet_explorer"',
-                        self.KEY_ATT_VERSION: u'"8\.0"',
+                        self.KEY_ATT_VERSION: u'"888\.0"',
                         self.KEY_ATT_UPDATE: u'"beta"',
                         self.KEY_ATT_EDITION: u'ANY',
                         self.KEY_ATT_SW_EDITION: u'ANY',
@@ -288,13 +270,8 @@ class TestCpeDataApi(unittest.TestCase):
                         self.KEY_ATT_LANGUAGE: u'"es\-es"',
                         }
 
-        endpoint = u'{host}:{port}{api_url}'.format(
-            host=self.BASE_HOST,
-            port=self.BASE_PORT,
-            api_url=self.BASE_API_URL)
-
         new_request = requests.post(
-            endpoint,
+            self.endpoint,
             headers=self.JSON_HEADER,
             data=json.dumps(json_cpedata))
 
@@ -325,15 +302,11 @@ class TestCpeDataApi(unittest.TestCase):
         without all the required fields
         """
 
-        json_cpedata = {self.KEY_ATT_PART: u''}
-
-        endpoint = u'{host}:{port}{api_url}'.format(
-            host=self.BASE_HOST,
-            port=self.BASE_PORT,
-            api_url=self.BASE_API_URL)
+        new_vendor = u'"8.0"'
+        json_cpedata = {self.KEY_ATT_VENDOR: new_vendor}
 
         new_request = requests.post(
-            endpoint,
+            self.endpoint,
             headers=self.JSON_HEADER,
             data=json.dumps(json_cpedata))
 
@@ -343,7 +316,7 @@ class TestCpeDataApi(unittest.TestCase):
         error_list = new_request.json()
 
         # Check if the error list has errors for incomplete fields
-        assert error_list.get(self.KEY_ATT_PART) is not None
+        assert error_list.get(self.KEY_ATT_VENDOR) is not None
 
     @pytest.mark.django_db
     def test_cpedata_details_options(self):
@@ -354,16 +327,15 @@ class TestCpeDataApi(unittest.TestCase):
 
         # Create a cpe data
         cpedata = good_cpedata()
+        cpedata.vendor = u'"testingdetailsoptions"'
         cpedata.save()
 
         # Retrieve OPTIONS from API
-        endpoint = u'{host}:{port}{api_url}{cpedata_pk}/'.format(
-            host=self.BASE_HOST,
-            port=self.BASE_PORT,
-            api_url=self.BASE_API_URL,
+        endpoint_pk = u'{endpoint}{cpedata_pk}/'.format(
+            endpoint=self.endpoint,
             cpedata_pk=cpedata.pk)
         options_request = requests.options(
-            endpoint, headers=self.JSON_HEADER)
+            endpoint_pk, headers=self.JSON_HEADER)
 
         # Check HTTP Status Code is OK (200)
         assert options_request.status_code == requests.codes.ok
@@ -381,7 +353,7 @@ class TestCpeDataApi(unittest.TestCase):
 
         cpedata.delete()
 
-    @pytest.mark.django_db        
+    @pytest.mark.django_db
     def test_cpedata_details_get_object(self):
         """
         Checks the controls details GET method
@@ -390,16 +362,16 @@ class TestCpeDataApi(unittest.TestCase):
 
         # Create a cpe data
         cpedata = good_cpedata()
+        cpedata.vendor = u'"testingdetailsget"'
         cpedata.save()
 
         # Retrieve GET from API
-        endpoint = u'{host}:{port}{api_url}{cpedata_pk}/'.format(
-            host=self.BASE_HOST,
-            port=self.BASE_PORT,
-            api_url=self.BASE_API_URL,
+        endpoint_pk = u'{endpoint}{cpedata_pk}/'.format(
+            endpoint=self.endpoint,
             cpedata_pk=cpedata.pk)
+
         get_request = requests.get(
-            endpoint, headers=self.JSON_HEADER)
+            endpoint_pk, headers=self.JSON_HEADER)
 
         # Check HTTP Status Code is OK (200)
         assert get_request.status_code == requests.codes.ok
@@ -430,16 +402,15 @@ class TestCpeDataApi(unittest.TestCase):
 
         # Create a cpe data
         cpedata = good_cpedata()
+        cpedata.vendor = u'"testingdetailsput"'
         cpedata.save()
 
         # Retrieve GET from API
-        endpoint = u'{host}:{port}{api_url}{cpedata_pk}/'.format(
-            host=self.BASE_HOST,
-            port=self.BASE_PORT,
-            api_url=self.BASE_API_URL,
+        endpoint_pk = u'{endpoint}{cpedata_pk}/'.format(
+            endpoint=self.endpoint,
             cpedata_pk=cpedata.pk)
         get_request = requests.get(
-            endpoint, headers=self.JSON_HEADER)
+            endpoint_pk, headers=self.JSON_HEADER)
 
         # Check HTTP Status Code is OK (200)
         assert get_request.status_code == requests.codes.ok
@@ -447,12 +418,12 @@ class TestCpeDataApi(unittest.TestCase):
         result = get_request.json()
 
         # We modify some fields from the result
-        vendor_edit = u'"testingvendor"'
+        vendor_edit = u'"testingvendor77"'
         result[self.KEY_ATT_VENDOR] = vendor_edit
 
         # Send PUT request to update object
         put_request = requests.put(
-            endpoint, headers=self.JSON_HEADER, data=json.dumps(result))
+            endpoint_pk, headers=self.JSON_HEADER, data=json.dumps(result))
 
         put_result = put_request.json()
 
@@ -478,16 +449,15 @@ class TestCpeDataApi(unittest.TestCase):
 
         # Create a cpe data
         cpedata = good_cpedata()
+        cpedata.vendor = u'"testingvendorputbad"'
         cpedata.save()
 
         # Retrieve GET from API
-        endpoint = u'{host}:{port}{api_url}{cpedata_pk}/'.format(
-            host=self.BASE_HOST,
-            port=self.BASE_PORT,
-            api_url=self.BASE_API_URL,
+        endpoint_pk = u'{endpoint}{cpedata_pk}/'.format(
+            endpoint=self.endpoint,
             cpedata_pk=cpedata.pk)
         get_request = requests.get(
-            endpoint, headers=self.JSON_HEADER)
+            endpoint_pk, headers=self.JSON_HEADER)
 
         # Check HTTP Status Code is OK (200)
         assert get_request.status_code == requests.codes.ok
@@ -495,11 +465,12 @@ class TestCpeDataApi(unittest.TestCase):
         result = get_request.json()
 
         # We modify some fields from the result
-        result[self.KEY_ATT_VENDOR] = u''
+        new_vendor = u'"8.0"'
+        result[self.KEY_ATT_VENDOR] = new_vendor
 
         # Send PUT request to update object
         put_request = requests.put(
-            endpoint, headers=self.JSON_HEADER, data=json.dumps(result))
+            endpoint_pk, headers=self.JSON_HEADER, data=json.dumps(result))
 
         error_list = put_request.json()
 
@@ -519,16 +490,15 @@ class TestCpeDataApi(unittest.TestCase):
 
         # Create a cpe data
         cpedata = good_cpedata()
+        cpedata.vendor = u'"testingvendorpatch"'
         cpedata.save()
 
         # Patch control
         old_vendor = cpedata.vendor
         new_vendor = u'"NewVendor"'
         patch_cpedata = {self.KEY_ATT_VENDOR: new_vendor}
-        detail_endpoint = u'{host}:{port}{api_url}{cpedata_id}/'.format(
-            host=self.BASE_HOST,
-            port=self.BASE_PORT,
-            api_url=self.BASE_API_URL,
+        detail_endpoint = u'{endpoint}{cpedata_id}/'.format(
+            endpoint=self.endpoint,
             cpedata_id=cpedata.id)
 
         patch_request = requests.patch(
@@ -554,15 +524,14 @@ class TestCpeDataApi(unittest.TestCase):
 
         # Create a cpe data
         cpedata = good_cpedata()
+        cpedata.vendor = u'"testvendortestpatch"'
         cpedata.save()
 
         # Patch cpe data
-        new_vendor = u''
+        new_vendor = u'"8.0"'
         patch_cpedata = {self.KEY_ATT_VENDOR: new_vendor}
-        detail_endpoint = u'{host}:{port}{api_url}{cpedata_id}/'.format(
-            host=self.BASE_HOST,
-            port=self.BASE_PORT,
-            api_url=self.BASE_API_URL,
+        detail_endpoint = u'{endpoint}{cpedata_id}/'.format(
+            endpoint=self.endpoint,
             cpedata_id=cpedata.id)
 
         patch_request = requests.patch(
@@ -588,12 +557,11 @@ class TestCpeDataApi(unittest.TestCase):
 
         # Create a cpe data
         cpedata = good_cpedata()
+        cpedata.vendor = u'"testingvendordetaildelete"'
         cpedata.save()
 
-        detail_endpoint = u'{host}:{port}{api_url}{cpedata_id}/'.format(
-            host=self.BASE_HOST,
-            port=self.BASE_PORT,
-            api_url=self.BASE_API_URL,
+        detail_endpoint = u'{endpoint}{cpedata_id}/'.format(
+            endpoint=self.endpoint,
             cpedata_id=cpedata.id)
 
         delete_request = requests.delete(
@@ -611,16 +579,15 @@ class TestCpeDataApi(unittest.TestCase):
 
         # Create a cpe data
         cpedata = good_cpedata()
+        cpedata.vendor = u'"testingvendordetailsdeletebad"'
         cpedata.save()
 
         # Delete the cpe data keeping its id
         old_id = cpedata.id
         cpedata.delete()
 
-        detail_endpoint = u'{host}:{port}{api_url}{cpedata_id}/'.format(
-            host=self.BASE_HOST,
-            port=self.BASE_PORT,
-            api_url=self.BASE_API_URL,
+        detail_endpoint = u'{endpoint}{cpedata_id}/'.format(
+            endpoint=self.endpoint,
             cpedata_id=old_id)
 
         delete_request = requests.delete(

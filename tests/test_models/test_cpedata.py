@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -30,6 +29,7 @@ feedback about it, please contact:
 """
 
 import pytest
+import unittest
 import copy
 
 from django.core.exceptions import ValidationError
@@ -37,15 +37,34 @@ from django.db import IntegrityError
 from model_mommy import mommy
 
 from djangocpe.models import CpeData
-from .fixtures import good_cpedata
+from fixtures_models import good_cpedata
 
 
 @pytest.mark.django_db
-class TestCpeData:
+@pytest.mark.models
+class TestCpeData(unittest.TestCase):
     """
     Tests to check operations with cpe data elements
     of CPE dictionary model.
     """
+
+    KEY_ATT_PRODUCT = u'product'
+    KEY_ATT_VERSION = u'version'
+    KEY_ATT_UPDATE = u'update'
+    KEY_ATT_EDITION = u'edition'
+    KEY_ATT_SW_EDITION = u'sw_edition'
+    KEY_ATT_TARGET_SW = u'target_sw'
+    KEY_ATT_TARGET_HW = u'target_hw'
+    KEY_ATT_OTHER = u'other'
+    KEY_ATT_LANGUAGE = u'language'
+
+    def shortDescription(self):
+        """
+        Overrides the docstring output in nosetest,
+        showing the method's name instead
+        """
+
+        return None
 
     def test_good_cpedata_all_fields(self):
         """
@@ -54,17 +73,17 @@ class TestCpeData:
         """
 
         # Create values
-        part = '"a"'
-        vendor = '"microsoft"'
-        product = '"internet_explorer"'
-        version = '"8\.0"'
-        update = '"beta"'
-        edition = 'ANY'
-        sw_edition = 'ANY'
-        target_sw = 'ANY'
-        target_hw = '"x64"'
-        other = 'NA'
-        language = '"es\-es"'
+        part = u'"a"'
+        vendor = u'"microsoft"'
+        product = u'"internet_explorer"'
+        version = u'"8\.0"'
+        update = u'"beta"'
+        edition = u'ANY'
+        sw_edition = u'ANY'
+        target_sw = u'ANY'
+        target_hw = u'"x64"'
+        other = u'NA'
+        language = u'"es\-es"'
 
         # Create object
         cpe = CpeData(part=part, vendor=vendor, product=product,
@@ -105,6 +124,9 @@ class TestCpeData:
         assert cpe.target_hw == cpe_db.target_hw
         assert cpe.other == cpe_db.other
         assert cpe.language == cpe_db.language
+
+        # Delete cpe created
+        cpe_db.delete()
 
     def test_good_cpedata_min_fields(self):
         """
@@ -149,14 +171,17 @@ class TestCpeData:
         assert cpe.other == cpe_db.other
         assert cpe.language == cpe_db.language
 
-    def test_bad_cpedata_part(self, good_cpedata):
+        # Delete cpe created
+        cpe_db.delete()
+
+    def test_bad_cpedata_part(self):
         """
         Check the creation of a cpe data with an invalid value in
         atributte part.
         """
 
-        cpe = good_cpedata
-        cpe.part = '"kk"'
+        cpe = good_cpedata()
+        cpe.part = u'"kk"'
 
         with pytest.raises(ValidationError) as e:
             cpe.full_clean()
@@ -166,14 +191,14 @@ class TestCpeData:
         # It is not possible to know what field is bad
         assert len(e.value.message_dict) == 1
 
-    def test_bad_cpedata_vendor(self, good_cpedata):
+    def test_bad_cpedata_vendor(self):
         """
         Check the creation of a cpe data with an invalid value in
         atributte vendor.
         """
 
-        cpe = good_cpedata
-        cpe.vendor = '"*??nvidia"'
+        cpe = good_cpedata()
+        cpe.vendor = u'"*??nvidia"'
 
         with pytest.raises(ValidationError) as e:
             cpe.full_clean()
@@ -183,170 +208,145 @@ class TestCpeData:
         # It is not possible to know what field is bad
         assert len(e.value.message_dict) == 1
 
-    def test_bad_cpedata_product(self, good_cpedata):
+    def test_bad_cpedata_product(self):
         """
         Check the creation of a cpe data with an invalid value in
         atributte product.
         """
 
-        cpe = good_cpedata
-        cpe.product = '"python**"'
+        cpe = good_cpedata()
+        cpe.product = u'"python**"'
 
         with pytest.raises(ValidationError) as e:
             cpe.full_clean()
 
-        # Message_dict attribute contains a key '__all__'
-        # with the error message associated with the invalid field
-        # It is not possible to know what field is bad
-        assert len(e.value.message_dict) == 1
+        assert self.KEY_ATT_PRODUCT in e.value.message_dict
 
-    def test_bad_cpedata_version(self, good_cpedata):
+    def test_bad_cpedata_version(self):
         """
         Check the creation of a cpe data with an invalid value in
         atributte version.
         """
 
-        cpe = good_cpedata
+        cpe = good_cpedata()
         cpe.version = '"10.0.1"'
 
         with pytest.raises(ValidationError) as e:
             cpe.full_clean()
 
-        # Message_dict attribute contains a key '__all__'
-        # with the error message associated with the invalid field
-        # It is not possible to know what field is bad
-        assert len(e.value.message_dict) == 1
+        assert self.KEY_ATT_VERSION in e.value.message_dict
 
-    def test_bad_cpedata_update(self, good_cpedata):
+    def test_bad_cpedata_update(self):
         """
         Check the creation of a cpe data with an invalid value in
         atributte update.
         """
 
-        cpe = good_cpedata
+        cpe = good_cpedata()
         cpe.update = '"update-1"'
 
         with pytest.raises(ValidationError) as e:
             cpe.full_clean()
 
-        # Message_dict attribute contains a key '__all__'
-        # with the error message associated with the invalid field
-        # It is not possible to know what field is bad
-        assert len(e.value.message_dict) == 1
+        assert self.KEY_ATT_UPDATE in e.value.message_dict
 
-    def test_bad_cpedata_edition(self, good_cpedata):
+    def test_bad_cpedata_edition(self):
         """
         Check the creation of a cpe data with an invalid value in
         atributte edition.
         """
 
-        cpe = good_cpedata
+        cpe = good_cpedata()
         cpe.edition = 'VA'
 
         with pytest.raises(ValidationError) as e:
             cpe.full_clean()
 
-        # Message_dict attribute contains a key '__all__'
-        # with the error message associated with the invalid field
-        # It is not possible to know what field is bad
-        assert len(e.value.message_dict) == 1
+        assert self.KEY_ATT_EDITION in e.value.message_dict
 
-    def test_bad_cpedata_sw_edition(self, good_cpedata):
+    def test_bad_cpedata_sw_edition(self):
         """
         Check the creation of a cpe data with an invalid value in
         atributte sw_edition.
         """
 
-        cpe = good_cpedata
+        cpe = good_cpedata()
         cpe.sw_edition = '"online**"'
 
         with pytest.raises(ValidationError) as e:
             cpe.full_clean()
 
-        # Message_dict attribute contains a key '__all__'
-        # with the error message associated with the invalid field
-        # It is not possible to know what field is bad
-        assert len(e.value.message_dict) == 1
+        assert self.KEY_ATT_SW_EDITION in e.value.message_dict
 
-    def test_bad_cpedata_target_sw(self, good_cpedata):
+    def test_bad_cpedata_target_sw(self):
         """
         Check the creation of a cpe data with an invalid value in
         atributte target_sw.
         """
 
-        cpe = good_cpedata
+        cpe = good_cpedata()
         cpe.target_sw = "NAN"
 
         with pytest.raises(ValidationError) as e:
             cpe.full_clean()
 
-        # Message_dict attribute contains a key '__all__'
-        # with the error message associated with the invalid field
-        # It is not possible to know what field is bad
-        assert len(e.value.message_dict) == 1
+        assert self.KEY_ATT_TARGET_SW in e.value.message_dict
 
-    def test_bad_cpedata_target_hw(self, good_cpedata):
+    def test_bad_cpedata_target_hw(self):
         """
         Check the creation of a cpe data with an invalid value in
         atributte target_hw.
         """
 
-        cpe = good_cpedata
+        cpe = good_cpedata()
         cpe.target_hw = "NAN"
 
         with pytest.raises(ValidationError) as e:
             cpe.full_clean()
 
-        # Message_dict attribute contains a key '__all__'
-        # with the error message associated with the invalid field
-        # It is not possible to know what field is bad
-        assert len(e.value.message_dict) == 1
+        assert self.KEY_ATT_TARGET_HW in e.value.message_dict
 
-    def test_bad_cpedata_other(self, good_cpedata):
+    def test_bad_cpedata_other(self):
         """
         Check the creation of a cpe data with an invalid value in
         atributte other.
         """
 
-        cpe = good_cpedata
+        cpe = good_cpedata()
         cpe.other = "AANY"
 
         with pytest.raises(ValidationError) as e:
             cpe.full_clean()
 
-        # Message_dict attribute contains a key '__all__'
-        # with the error message associated with the invalid field
-        # It is not possible to know what field is bad
-        assert len(e.value.message_dict) == 1
+        assert self.KEY_ATT_OTHER in e.value.message_dict
 
-    def test_bad_cpedata_language(self, good_cpedata):
+    def test_bad_cpedata_language(self):
         """
         Check the creation of a cpe data with an invalid value in
         atributte language.
         """
 
-        cpe = good_cpedata
+        cpe = good_cpedata()
         cpe.language = '"en-us"'
 
         with pytest.raises(ValidationError) as e:
             cpe.full_clean()
 
-        # Message_dict attribute contains a key '__all__'
-        # with the error message associated with the invalid field
-        # It is not possible to know what field is bad
-        assert len(e.value.message_dict) == 1
+        assert self.KEY_ATT_LANGUAGE in e.value.message_dict
 
-    def test_cpedata_repeated(self, good_cpedata):
+    def test_cpedata_repeated(self):
         """
         Check the creation of a cpe data with an invalid value in
         atributte language.
         """
 
-        cpe = good_cpedata
-        cperep = copy.deepcopy(good_cpedata)
+        cpe = good_cpedata()
+        cperep = copy.deepcopy(cpe)
 
         cpe.full_clean()
         cpe.save()
 
         with pytest.raises(IntegrityError):
             cperep.save()
+
+        cpe.delete()
