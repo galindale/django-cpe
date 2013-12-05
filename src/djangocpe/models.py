@@ -12,7 +12,6 @@ from south.modelsinspector import add_introspection_rules
 add_introspection_rules([], ["^djangocpe\.fields\.URIField"])
 add_introspection_rules([], ["^djangocpe\.fields\.LanguageField"])
 
-
 # Used when the name is first added to the dictionary
 CHANGE_ORIGINAL_RECORD = 1
 
