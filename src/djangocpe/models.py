@@ -256,21 +256,26 @@ class CpeData(models.Model):
         :rtype: string
         """
 
-        cpe_name = ['wfn:[']
+        cpe_name_prefix = "wfn:["
+        cpe_name_suffix = "]"
+        cpe_content = []
+        wfn_str = ""
 
         for att in CPEComponent.CPE_COMP_KEYS_EXTENDED:
             value = getattr(self, att)
-            if value != "":
-                cpe_name.append('{0}={1}'.format(att, value))
-                cpe_name.append(', ')
+            if value is not None and value != "":
+                cpe_content.append('{0}={1}'.format(att, value))
 
-        if len(cpe_name) > 1:
-            # Delete the last separator
-            cpe_name = cpe_name[:-1]
+        if len(cpe_content) > 0:
+            # Append the WFN suffix
+            wfn_str = ", ".join(cpe_content)
 
-        # Append the WFN suffix
-        cpe_name.append(']')
-        cpe_wfn = CPE("".join(cpe_name), CPE.VERSION_2_3)
+        wfn_str = "{prefix}{content}{suffix}".format(
+            prefix=cpe_name_prefix,
+            content=wfn_str,
+            suffix=cpe_name_suffix)
+
+        cpe_wfn = CPE(wfn_str)
 
         return cpe_wfn.as_fs()
 
