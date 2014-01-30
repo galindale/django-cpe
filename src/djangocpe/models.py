@@ -243,6 +243,7 @@ class CpeData(models.Model):
             # Try to create a CPE Name with the input data.
             CPE2_3_WFN(wfn)
         except ValueError as e:
+            # TODO: e.message deprecated in Python 2.6. FIX NAO!
             raise ValidationError(message=e.message, code='invalid')
         else:
             super(CpeData, self).clean()
