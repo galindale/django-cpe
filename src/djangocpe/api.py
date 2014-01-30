@@ -24,15 +24,12 @@ class CpeDataViewSet(viewsets.ModelViewSet):
 
         # QuerySet used to retrieve assets
         queryset = models.CpeData.objects.all()
-        keys = self.request.QUERY_PARAMS.keys()
-        print keys
 
         # Take part field from GET params
         part = self.request.QUERY_PARAMS.get(
             'part', None)
         if part is not None:
             queryset = queryset.filter(part=part)
-            print queryset
 
         # Take vendor field from GET params
         vendor = self.request.QUERY_PARAMS.get(
