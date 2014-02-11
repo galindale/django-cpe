@@ -15,16 +15,17 @@ AUTHORS = u'Alejandro Galindo García, Roberto Abdelkader Martínez Pérez'
 EMAILS = u'galindo.garcia.alejandro@gmail.com, robertomartinezp@gmail.com'
 
 install_requires = [
-    'django==1.4.9',
+    'django>=1.5',
     # Request about API
     'requests==2.0.1',
     # API REST in Django
-    'djangorestframework==2.3.9',
+    'djangorestframework==2.3.10',
     # Parsing and validation of URIs (RFC 3986) and IRIs (RFC 3987)
     'rfc3987==1.3.2',
     # Migrations about models
     'south==0.8.4',
-    'MySQL-python==1.2.4',
+    # MySQL client for Python
+    'MySQL-python==1.2.5',
     # Generation and validation of CPE names
     'cpe',
 ]
