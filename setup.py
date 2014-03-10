@@ -2,7 +2,6 @@
 
 from setuptools import setup
 from setuptools import find_packages
-import sys
 import os
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -17,20 +16,20 @@ EMAILS = u'galindo.garcia.alejandro@gmail.com, robertomartinezp@gmail.com'
 install_requires = [
     'django>=1.5',
     # Request about API
-    'requests==2.0.1',
+    'requests>=2.0.1',
     # API REST in Django
-    'djangorestframework==2.3.10',
+    'djangorestframework>=2.3.10',
     # Parsing and validation of URIs (RFC 3986) and IRIs (RFC 3987)
-    'rfc3987==1.3.2',
+    'rfc3987>=1.3.2',
     # Migrations about models
-    'south==0.8.4',
+    'south>=0.8.4',
     # MySQL client for Python
     'MySQL-python==1.2.5',
     # Generation and validation of CPE names
     'cpe',
 ]
 
-dependency_links=[
+dependency_links = [
     # Last release of pyiso8601 is not available on PyPI
     'https://bitbucket.org/micktwomey/pyiso8601/get/5b4f192e8077.zip',
 ],
