@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -31,7 +30,6 @@ feedback about it, please contact:
 
 from iso8601 import iso8601
 from xml.sax.handler import ContentHandler
-from datetime import datetime
 
 from cpe import CPE
 from djangocpe.models import CpeList, Generator, CpeData, CpeItem, Title, Note
@@ -778,12 +776,12 @@ class Cpedict23Handler(ContentHandler):
         :returns: The CPE Name saved or existing one
         :rtype: CpeData
         :raises:
-            :NotImplementationError: invalid CPE Name with input version
+            :NotImplementedError: invalid CPE Name with input version
         """
 
         try:
             cpe = CPE(cpe_str, version)
-        except NotImplementationError:
+        except NotImplementedError:
             raise
         else:
             # Convert CPE Name to WFN style
@@ -1049,7 +1047,7 @@ class Cpedict23Handler(ContentHandler):
                         # AUTHORITY ---
 
                         elif name == self.TAG_AUTHORITY:
-                            self._endAuthority(attributes)
+                            self._endAuthority()
 
                         elif self.inAuthority:
 

@@ -33,8 +33,6 @@ import os
 
 from djangocpe.models import Note
 
-from cpe.cpe import CPE
-
 import function_parsing
 
 

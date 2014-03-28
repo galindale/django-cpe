@@ -33,8 +33,6 @@ import os
 
 from djangocpe.models import Check
 
-from cpe.cpe import CPE
-
 import function_parsing
 
 
@@ -51,7 +49,7 @@ class TestCpe23Check:
         """
         Get the check values and check if they are saved correctly
         in database.
-        
+
         :param Check check: The values of check element
         :returns: None
         """

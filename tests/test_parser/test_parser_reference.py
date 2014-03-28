@@ -33,8 +33,6 @@ import os
 
 from djangocpe.models import Reference
 
-from cpe.cpe import CPE
-
 import function_parsing
 
 
@@ -51,7 +49,7 @@ class TestCpe23Reference:
         """
         Get the reference values and check if they are saved correctly
         in database.
-        
+
         :param Reference ref: The values of reference element
         :returns: None
         """

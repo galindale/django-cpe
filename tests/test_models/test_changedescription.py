@@ -36,9 +36,7 @@ from model_mommy import mommy
 
 from djangocpe.models import ChangeDescription
 from djangocpe.models import ProvenanceRecord
-from djangocpe.models import EvidenceReference
 from djangocpe.models import CHANGE_ORIGINAL_RECORD
-from .fixtures import good_org, good_evidence
 
 
 @pytest.mark.django_db

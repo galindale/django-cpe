@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -32,8 +31,6 @@ feedback about it, please contact:
 import sys
 
 from xml.sax import make_parser
-from xml.sax.handler import ContentHandler
-from datetime import datetime
 
 from cpedict23_handler import Cpedict23Handler
 

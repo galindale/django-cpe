@@ -51,7 +51,8 @@ class TestCheck:
 
         # Create check element
         cpeitem = mommy.make(CpeItem)
-        check = mommy.prepare(Check,
+        check = mommy.prepare(
+            Check,
             system="http://oval.mitre.org/XMLSchema/oval-definitions-5",
             cpeitem=cpeitem)
 
@@ -78,7 +79,8 @@ class TestCheck:
 
         # Create check element
         cpeitem = mommy.make(CpeItem)
-        check = mommy.prepare(Check,
+        check = mommy.prepare(
+            Check,
             href="http://oval.mitre.gov",
             system="http://oval.mitre.org/XMLSchema/oval-definitions-5",
             cpeitem=cpeitem)
@@ -107,7 +109,8 @@ class TestCheck:
 
         # TODO: test urn in system_uri, e. g., urn:ietf:rfc:2648
         cpeitem = mommy.make(CpeItem)
-        check = mommy.prepare(Check,
+        check = mommy.prepare(
+            Check,
             href="baduri",
             system="http://oval.mitre.org",
             cpeitem=cpeitem)
@@ -126,7 +129,8 @@ class TestCheck:
 
         # TODO: test urn in file_ref, e. g., urn:ietf:rfc:2648
         cpeitem = mommy.make(CpeItem)
-        check = mommy.prepare(Check,
+        check = mommy.prepare(
+            Check,
             href="http://oval.mitre.org",
             system="baduri",
             cpeitem=cpeitem)

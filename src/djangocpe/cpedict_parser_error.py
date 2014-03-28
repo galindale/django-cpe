@@ -1,11 +1,10 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
 This file is part of django-cpe package.
 
-This module implements the exception that can be raised when an error occurs 
-to parse CPE Dictionaries specified as XML files.
+This module implements the parser that import and export CPE Dictionaries
+specified as XML files.
 
 Copyright (C) 2013  Alejandro Galindo Garcí Roberto Abdelkader Martíz Péz
 

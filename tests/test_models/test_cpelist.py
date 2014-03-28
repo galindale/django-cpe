@@ -32,7 +32,7 @@ import pytest
 
 from djangocpe.models import CpeList
 from model_mommy import mommy
-from .fixtures import good_cpedata
+from fixtures_models import good_cpedata
 
 
 @pytest.mark.django_db

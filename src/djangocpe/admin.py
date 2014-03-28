@@ -89,6 +89,7 @@ class CpeItemAdmin(admin.ModelAdmin):
         DeprecationInline,
     ]
 
+
 class DeprecationAdmin(admin.ModelAdmin):
     inlines = [
         DeprecatedByInline,

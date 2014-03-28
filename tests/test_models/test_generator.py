@@ -30,10 +30,9 @@ feedback about it, please contact:
 
 import pytest
 
-from django.utils import timezone
 from model_mommy import mommy
 
-from djangocpe.models import Generator, CpeList
+from djangocpe.models import Generator
 
 
 @pytest.mark.django_db

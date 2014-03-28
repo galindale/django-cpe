@@ -33,8 +33,6 @@ import os
 
 from djangocpe.models import Title
 
-from cpe.cpe import CPE
-
 import function_parsing
 
 
@@ -51,7 +49,7 @@ class TestCpe23Title:
         """
         Get the title values and check if they are saved correctly
         in database.
-        
+
         :param Title title: The values of title element
         :returns: None
         """
@@ -92,7 +90,7 @@ class TestCpe23Title:
 
         # The XML filepath with the CPE Dictionary
         XML_PATH = "{0}cpedict_v2.3_title_two.xml".format(self.dirpath)
- 
+
         # Parse input XML file
         function_parsing.parse_xmlfile(XML_PATH)
 

@@ -34,7 +34,7 @@ from django.utils import timezone
 from model_mommy import mommy
 
 from djangocpe.models import CpeItem, CpeList
-from .fixtures import good_cpedata
+from fixtures_models import good_cpedata
 
 
 @pytest.mark.django_db

@@ -33,7 +33,7 @@ import pytest
 from djangocpe.models import ProvenanceRecord
 from model_mommy import mommy
 
-from .fixtures import good_org
+from fixtures_models import good_org
 
 
 @pytest.mark.django_db

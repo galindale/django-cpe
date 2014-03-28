@@ -35,7 +35,7 @@ from model_mommy import mommy
 
 from djangocpe.models import DeprecatedBy, Deprecation
 from djangocpe.models import DEPRECATED_BY_NAME_CORRECTION
-from .fixtures import good_cpedata
+from fixtures_models import good_cpedata
 
 
 @pytest.mark.django_db
