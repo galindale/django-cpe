@@ -73,7 +73,7 @@ Compatibility
 Contribute
 ----------
 
-|Waffle_ready| |Download_format| |Downloads_day| |Downloads_week| |Downloads_month|
+|Waffle_ready| |Download_format| |Downloads_month| |Downloads_week| |Downloads_day|
 
 Follow the steps on the `how to contribute`_ document.
 
@@ -99,9 +99,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 .. _PyPI: https://pypi.python.org/pypi/django-cpe/
 .. _MITRE: http://cpe.mitre.org/
-.. _NIST: hhttp://nvd.nist.gov/cpe.cfm
+.. _NIST: http://nvd.nist.gov/cpe.cfm
 .. _ReadTheDocs: https://django-cpe.readthedocs.org/en/latest/
-.. _GitHub: https://github.com/galindale/django-cpe
+.. _GitHub: https://github.com/galindale/django-cpe/
 .. _How to contribute: https://github.com/galindale/django-cpe/blob/review-docs/CONTRIBUTING.md
 .. _Old CPE versions: http://cpe.mitre.org/cpe/archive/
 .. _Current CPE version: http://cpe.mitre.org/specification/
@@ -142,14 +142,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .. |Supported_Python_version| image:: https://pypip.in/py_versions/django-cpe/badge.svg
    :target: https://pypi.python.org/pypi/django-cpe/
    :alt: Supported Python versions
-
-.. |Download_format_wheel| image:: https://pypip.in/wheel/django-cpe/badge.svg
-   :target: https://pypi.python.org/pypi/django-cpe/
-   :alt: Wheel Status
-
-.. |Download_format_egg| image:: https://pypip.in/egg/django-cpe/badge.svg
-   :target: https://pypi.python.org/pypi/django-cpe/
-   :alt: Egg Status
 
 .. |Download_format| image:: https://pypip.in/format/django-cpe/badge.svg
     :target: https://pypi.python.org/pypi/django-cpe/
