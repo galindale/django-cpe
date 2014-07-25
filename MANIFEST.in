@@ -1,4 +1,4 @@
 include README.rst
-include NEWS.txt
+include CHANGES.rst
 
 global-include *.py
