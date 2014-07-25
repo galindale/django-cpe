@@ -1,8 +1,8 @@
 .. image:: http://cpe.mitre.org/images/cpe_logo.gif
    :alt: CPE Logo
 
-Common Platform Enumeration (CPE) dictionary for Django
--------------------------------------------------------
+CPE dictionary for Django
+-------------------------
 
 *Django-CPE* (this code) is a LGPL licensed Python package, implementing the
 CPE dictionary specification to store CPE names and metadata,
@@ -34,14 +34,17 @@ Features
 
 - Django models associated with CPE dictionary elements.
 - Import of CPE dictionaries with XML format.
-(TODO: explain the implementation with SAX)
 - LGPL Licensed.
 - Semantic versioning.
 - Tests.
 
+(TODO: explain the implementation with SAX)
 
-Installation |Package_version| |TravisCI| |Coveralls| |Requires|
-----------------------------------------------------------------
+
+Installation
+------------
+
+|Package_version| |TravisCI| |Coveralls| |Requires|
 
 To install `Django-CPE` execute:
 
@@ -58,21 +61,27 @@ Documentation
 Documentation is available at `ReadTheDocs`_.
 
 
-Compatibility |Supported_Python_version|
-----------------------------------------
+Compatibility
+-------------
+
+|Supported_Python_version|
 
 - Python: 2.7-3.4 => TODO: check all versions
 - CPE versions: 1.1, 2.0, 2.1, 2.2, 2.3 => TODO: check all versions
 
 
-Contribute |Waffle_ready| |Download_format| |Downloads_day| |Downloads_week| |Downloads_month|
-----------------------------------------------------------------------------------------------
+Contribute
+----------
+
+|Waffle_ready| |Download_format| |Downloads_day| |Downloads_week| |Downloads_month|
 
 Follow the steps on the `how to contribute`_ document.
 
 
-License |License|
------------------
+License
+-------
+
+|License|
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
@@ -93,30 +102,22 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 .. _NIST: hhttp://nvd.nist.gov/cpe.cfm
 .. _ReadTheDocs: https://django-cpe.readthedocs.org/en/latest/
 .. _GitHub: https://github.com/galindale/django-cpe
-.. _How to contribute: https://github.com/galindale/django-cpe/blob/develop/CONTRIBUTING.md
+.. _How to contribute: https://github.com/galindale/django-cpe/blob/review-docs/CONTRIBUTING.md
 .. _Old CPE versions: http://cpe.mitre.org/cpe/archive/
 .. _Current CPE version: http://cpe.mitre.org/specification/
 
 
-.. |TravisCI| image:: https://travis-ci.org/galindale/django-cpe.svg?branch=master
+.. |TravisCI| image:: https://travis-ci.org/galindale/django-cpe.svg?branch=review-docs
    :target: https://travis-ci.org/galindale/django-cpe
-   :alt: Build Status (master)
-
-.. |TravisCI_develop| image:: https://travis-ci.org/galindale/django-cpe.svg?branch=develop
-   :target: https://travis-ci.org/galindale/django-cpe
-   :alt: Build Status (develop)
+   :alt: Build Status (review-docs)
 
 .. |Waffle_ready| image:: https://badge.waffle.io/galindale/django-cpe.png?label=ready&title=Ready
    :target: https://waffle.io/galindale/django-cpe
    :alt: Stories in Ready
 
-.. |Coveralls| image:: https://coveralls.io/repos/galindale/django-cpe/badge.png?branch=master
-   :target: https://coveralls.io/r/galindale/django-cpe?branch=master
-   :alt: Coverage Status (master)
-
-.. |Coverage_develop| image:: https://coveralls.io/repos/galindale/django-cpe/badge.png?branch=develop
-   :target: https://coveralls.io/r/galindale/django-cpe?branch=develop
-   :alt: Coverage Status (develop)
+.. |Coveralls| image:: https://coveralls.io/repos/galindale/django-cpe/badge.png?branch=review-docs
+   :target: https://coveralls.io/r/galindale/django-cpe?branch=review-docs
+   :alt: Coverage Status (review-docs)
 
 .. |Downloads_day| image:: https://pypip.in/download/django-cpe/badge.svg?period=day
    :target: https://crate.io/packages/django-cpe
@@ -130,16 +131,12 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
    :target: https://crate.io/packages/django-cpe
    :alt: Downloads by month
 
-.. |Requires| image:: https://requires.io/github/galindale/django-cpe/requirements.png?branch=master
-   :target: https://requires.io/github/galindale/django-cpe/requirements/?branch=master
-   :alt: Requirements Status (master)
+.. |Requires| image:: https://requires.io/github/galindale/django-cpe/requirements.png?branch=review-docs
+   :target: https://requires.io/github/galindale/django-cpe/requirements/?branch=review-docs
+   :alt: Requirements Status (review-docs)
 
-.. |Requires_develop| image:: https://requires.io/github/galindale/django-cpe/requirements.png?branch=develop
-   :target: https://requires.io/github/galindale/django-cpe/requirements/?branch=develop
-   :alt: Requirements Status (develop)
-
-.. |Package_version| image:: https://badge.fury.io/py/cpe.svg
-    :target: http://badge.fury.io/py/cpe
+.. |Package_version| image:: https://badge.fury.io/py/django-cpe.svg
+    :target: http://badge.fury.io/py/django-cpe
     :alt: Latest Version
 
 .. |Supported_Python_version| image:: https://pypip.in/py_versions/django-cpe/badge.svg
